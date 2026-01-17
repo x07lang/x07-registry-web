@@ -1,3 +1,5 @@
+import { env } from '$env/dynamic/public';
+
 function normalizeBaseUrl(url: string): string {
 	let trimmed = url.trim();
 	if (!trimmed) trimmed = 'https://index.x07.io/';
@@ -5,8 +7,8 @@ function normalizeBaseUrl(url: string): string {
 	return trimmed;
 }
 
-export const INDEX_BASE = normalizeBaseUrl(import.meta.env.PUBLIC_X07_INDEX_BASE ?? '');
-export const CATALOG_PATH = (import.meta.env.PUBLIC_X07_CATALOG_PATH ?? 'catalog.json').replace(
+export const INDEX_BASE = normalizeBaseUrl(env.PUBLIC_X07_INDEX_BASE ?? '');
+export const CATALOG_PATH = (env.PUBLIC_X07_CATALOG_PATH ?? 'catalog.json').replace(
 	/^\/+/,
 	''
 );
