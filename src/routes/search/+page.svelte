@@ -183,25 +183,32 @@
 	});
 </script>
 
-<h1>Search</h1>
+<div class="page-header">
+	<h1>Search Packages</h1>
+	<p class="muted">Find packages with advanced filters</p>
+</div>
 
 {#if error}
 	<div class="card">
 		<ErrorBox title="Search unavailable" {error} />
 	</div>
 {:else if !response}
-	<p class="muted">Loading…</p>
+	<p class="muted loading">Loading search…</p>
 {:else}
-	<form onsubmit={submit} class="card" style="margin-top: 1rem;">
-		<label for="q">Query</label>
-		<input id="q" name="q" type="search" placeholder="package name" bind:value={formQuery} />
-
-		<div style="margin-top: 0.75rem;">
-			<label for="prefix">Name prefix</label>
-			<input id="prefix" name="prefix" type="text" placeholder="(optional)" bind:value={prefix} />
+	<form onsubmit={submit} class="card search-form">
+		<div class="form-row">
+			<div class="form-field form-field--grow">
+				<label for="q">Query</label>
+				<input id="q" name="q" type="search" placeholder="Search packages…" bind:value={formQuery} />
+			</div>
+			<div class="form-field">
+				<label for="prefix">Name prefix</label>
+				<input id="prefix" name="prefix" type="text" placeholder="Optional" bind:value={prefix} />
+			</div>
 		</div>
 
-		<div style="margin-top: 0.75rem;" class="filters">
+		<div class="filters">
+			<span class="filters__label muted">Filters:</span>
 			<label class="filter">
 				<input type="checkbox" checked={hasDescription} onchange={(e) => (hasDescription = (e.target as HTMLInputElement).checked)} />
 				<span>Has description</span>
@@ -211,7 +218,7 @@
 				<span>Has owners</span>
 			</label>
 			<label class="filter">
-				<span>Yanked</span>
+				<span>Yanked:</span>
 				<select bind:value={yankedMode}>
 					<option value="any">Any</option>
 					<option value="not_yanked">Not yanked</option>
@@ -220,28 +227,33 @@
 			</label>
 		</div>
 
-		<div style="margin-top: 0.75rem; display: flex; gap: 0.75rem;">
-			<button class="btn" type="submit">Search</button>
+		<div class="form-actions">
+			<button class="btn btn--primary" type="submit">Search</button>
 		</div>
 	</form>
 
 	{#if filterError}
-		<div class="card" style="margin-top: 1rem;">
+		<div class="card" style="margin-top: 1.5rem;">
 			<ErrorBox title="Filter data unavailable" error={filterError} />
 		</div>
-	{:else if filterBusy}
-		<p class="muted">Applying filters…</p>
 	{/if}
 
-	<p class="muted">
-		{filtered.length} result(s) — total: {response.total}
-	</p>
+	<div class="results-header">
+		<span class="results-count">
+			{filtered.length} result{filtered.length === 1 ? '' : 's'}
+			{#if filterBusy}
+				<span class="muted">(applying filters…)</span>
+			{/if}
+		</span>
+		<span class="muted">Total in index: {response.total}</span>
+	</div>
+
 	<div class="card">
 		<table>
 			<thead>
 				<tr>
 					<th>Package</th>
-					<th>Latest</th>
+					<th>Latest version</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -250,7 +262,7 @@
 						<td>
 							<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
 							{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
-								<span class="badge" style="margin-left: 0.5rem;">official</span>
+								<span class="badge badge--accent">official</span>
 							{/if}
 						</td>
 						<td class="muted">
@@ -258,35 +270,130 @@
 								v{details.get(pkg.name)?.latestNonYanked}
 							{:else if pkg.latest_version}
 								v{pkg.latest_version}
+							{:else}
+								—
 							{/if}
 						</td>
 					</tr>
 				{/each}
+				{#if filtered.length === 0}
+					<tr>
+						<td colspan="2" class="muted" style="text-align: center; padding: 2rem;">No packages match your search</td>
+					</tr>
+				{/if}
 			</tbody>
 		</table>
 	</div>
 {/if}
 
 <style>
+	.page-header {
+		margin-bottom: 1.5rem;
+	}
+
+	.page-header h1 {
+		margin-bottom: 0.25rem;
+	}
+
+	.page-header p {
+		margin: 0;
+	}
+
+	.search-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.form-row {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 1rem;
+	}
+
+	.form-field {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.form-field--grow {
+		flex: 1;
+	}
+
+	.form-field input[type='text'] {
+		min-width: 180px;
+	}
+
 	.filters {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.75rem 1.5rem;
 		align-items: center;
+		padding: 1rem;
+		background: var(--panel);
+		border-radius: var(--radius-sm);
+	}
+
+	.filters__label {
+		font-size: 0.875rem;
+		font-weight: 500;
 	}
 
 	.filter {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		font-size: 0.9rem;
 	}
 
-	select {
-		font-size: 1rem;
-		padding: 0.5rem 0.65rem;
-		border-radius: 12px;
-		border: 1px solid var(--border);
-		background: rgba(0, 0, 0, 0.25);
-		color: var(--text);
+	.filter input[type='checkbox'] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--accent);
+	}
+
+	.filter select {
+		width: auto;
+		min-width: 120px;
+		font-size: 0.9rem;
+		padding: 0.4rem 2rem 0.4rem 0.65rem;
+	}
+
+	.form-actions {
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.results-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin: 1.5rem 0 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.results-count {
+		color: var(--text-secondary);
+	}
+
+	.loading {
+		padding: 2rem 0;
+	}
+
+	@media (max-width: 640px) {
+		.form-row {
+			grid-template-columns: 1fr;
+		}
+
+		.filters {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.results-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.5rem;
+		}
 	}
 </style>

@@ -117,43 +117,66 @@
 	}
 </script>
 
-<h1>Tokens</h1>
+<div class="page-header">
+	<h1>Token Management</h1>
+	<p class="muted">Manage your authentication tokens for the X07 registry</p>
+</div>
 
-<section class="card" style="margin-top: 1rem;">
-	<label for="token">Auth token</label>
-	<input id="token" name="token" type="password" placeholder="x07t_…" bind:value={tokenInput} />
-	<div style="margin-top: 0.75rem; display: flex; gap: 0.75rem;">
-		<button class="btn" type="button" onclick={saveToken}>Save</button>
-		<button class="btn" type="button" onclick={signOut}>Clear</button>
+<section class="card auth-card">
+	<h2>Authentication</h2>
+	<p class="text-secondary">Enter your auth token to manage tokens and view account details.</p>
+	<div class="auth-form">
+		<div class="auth-field">
+			<label for="token">Auth token</label>
+			<input id="token" name="token" type="password" placeholder="x07t_…" bind:value={tokenInput} />
+		</div>
+		<div class="auth-actions">
+			<button class="btn btn--primary" type="button" onclick={saveToken}>Authenticate</button>
+			{#if token}
+				<button class="btn btn--ghost" type="button" onclick={signOut}>Sign out</button>
+			{/if}
+		</div>
 	</div>
 	{#if error}
-		<div style="margin-top: 0.75rem;">
+		<div class="auth-error">
 			<ErrorBox {error} />
 		</div>
 	{/if}
 </section>
 
 {#if token && account}
-	<section class="card" style="margin-top: 1rem;">
-		<h2>Account</h2>
-		<p class="muted">
-			Handle: <code class="code-inline">{account.handle}</code>
-		</p>
-		<p class="muted">
-			Scopes: <code class="code-inline">{account.scopes.join(', ')}</code>
-		</p>
+	<section class="card account-card">
+		<h2>Account Details</h2>
+		<div class="account-info">
+			<div class="account-row">
+				<span class="account-label">Handle</span>
+				<code class="code-inline">{account.handle}</code>
+			</div>
+			<div class="account-row">
+				<span class="account-label">Scopes</span>
+				<div class="scope-badges">
+					{#each account.scopes as scope}
+						<span class="badge badge--accent">{scope}</span>
+					{/each}
+				</div>
+			</div>
+		</div>
 	</section>
 {/if}
 
 {#if token}
-	<section class="card" style="margin-top: 1rem;">
-		<h2>Create token</h2>
-		<form onsubmit={submitCreate}>
-			<label for="label">Label</label>
-			<input id="label" name="label" type="text" placeholder="(optional)" bind:value={createLabel} />
+	<section class="card create-card">
+		<h2>Create New Token</h2>
+		<form onsubmit={submitCreate} class="create-form">
+			<div class="form-field">
+				<label for="label">Label</label>
+				<input id="label" name="label" type="text" placeholder="e.g., CI/CD pipeline" bind:value={createLabel} />
+				<span class="form-hint muted">Optional identifier for this token</span>
+			</div>
 
-			<div style="margin-top: 0.75rem;">
-				<div class="muted">Scopes (must be subset of current token)</div>
+			<div class="form-field">
+				<label>Scopes</label>
+				<span class="form-hint muted">Must be a subset of your current token's scopes</span>
 				<div class="scopes">
 					{#each availableScopes as s}
 						<label class="scope">
@@ -168,19 +191,29 @@
 				</div>
 			</div>
 
-			<div style="margin-top: 0.75rem;">
-				<button class="btn" type="submit" disabled={busy}>Create</button>
+			<div class="form-actions">
+				<button class="btn btn--primary" type="submit" disabled={busy}>
+					{busy ? 'Creating…' : 'Create token'}
+				</button>
 			</div>
 		</form>
 
 		{#if createError}
-			<div style="margin-top: 0.75rem;">
+			<div class="create-error">
 				<ErrorBox title="Token action failed" error={createError} />
 			</div>
 		{/if}
 
 		{#if created}
-			<div style="margin-top: 1rem;">
+			<div class="created-token">
+				<div class="created-warning">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+						<line x1="12" y1="9" x2="12" y2="13"></line>
+						<line x1="12" y1="17" x2="12.01" y2="17"></line>
+					</svg>
+					<span>Copy this token now. You won't be able to see it again.</span>
+				</div>
 				<CopyCode label="Copy token" code={created.token} />
 			</div>
 		{/if}
@@ -188,8 +221,11 @@
 {/if}
 
 {#if token && tokens}
-	<section class="card" style="margin-top: 1rem;">
-		<h2>Existing tokens</h2>
+	<section class="card tokens-card">
+		<div class="tokens-header">
+			<h2>Your Tokens</h2>
+			<span class="muted">{tokens.length} token{tokens.length === 1 ? '' : 's'}</span>
+		</div>
 		<table>
 			<thead>
 				<tr>
@@ -202,48 +238,214 @@
 			<tbody>
 				{#each tokens as t}
 					<tr>
-						<td class="muted">{t.label}</td>
-						<td class="muted">{t.scopes.join(', ')}</td>
+						<td>{#if t.label}{t.label}{:else}<span class="muted">Unlabeled</span>{/if}</td>
+						<td>
+							<div class="scope-badges scope-badges--sm">
+								{#each t.scopes as scope}
+									<span class="badge">{scope}</span>
+								{/each}
+							</div>
+						</td>
 						<td>
 							{#if t.revoked_at}
 								<span class="badge badge--yanked">revoked</span>
 							{:else}
-								<span class="badge">active</span>
+								<span class="badge badge--accent">active</span>
 							{/if}
 						</td>
-						<td style="text-align: right;">
-							<button class="btn" type="button" disabled={busy || !!t.revoked_at} onclick={() => revoke(t.id)}>
+						<td class="action-cell">
+							<button
+								class="btn btn--ghost btn--sm"
+								type="button"
+								disabled={busy || !!t.revoked_at}
+								onclick={() => revoke(t.id)}
+							>
 								Revoke
 							</button>
 						</td>
 					</tr>
 				{/each}
+				{#if tokens.length === 0}
+					<tr>
+						<td colspan="4" class="muted empty-row">No tokens created yet</td>
+					</tr>
+				{/if}
 			</tbody>
 		</table>
 	</section>
 {/if}
 
 <style>
-	.code-inline {
-		font-family: var(--mono);
+	.page-header {
+		margin-bottom: 1.5rem;
+	}
+
+	.page-header h1 {
+		margin-bottom: 0.25rem;
+	}
+
+	.page-header p {
+		margin: 0;
+	}
+
+	.auth-card h2 {
+		margin-bottom: 0.5rem;
+	}
+
+	.auth-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.auth-field {
+		flex: 1;
+	}
+
+	.auth-actions {
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.auth-error {
+		margin-top: 1rem;
+	}
+
+	.account-card {
+		margin-top: 1.5rem;
+	}
+
+	.account-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 1rem;
+	}
+
+	.account-row {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.account-label {
+		min-width: 80px;
+		font-size: 0.9rem;
+		color: var(--muted);
+	}
+
+	.scope-badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.scope-badges--sm .badge {
+		font-size: 0.7rem;
+		padding: 0.15rem 0.5rem;
+	}
+
+	.create-card {
+		margin-top: 1.5rem;
+	}
+
+	.create-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		margin-top: 1rem;
+	}
+
+	.form-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.form-hint {
+		font-size: 0.8rem;
+	}
+
+	.form-actions {
+		padding-top: 0.5rem;
 	}
 
 	.scopes {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 0.5rem;
-		margin-top: 0.5rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 0.25rem;
 	}
 
 	.scope {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		background: var(--panel);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		transition: all var(--transition-fast);
 	}
 
-	@media (max-width: 860px) {
-		.scopes {
-			grid-template-columns: 1fr;
-		}
+	.scope:hover {
+		border-color: var(--border-strong);
+		background: var(--panel-hover);
+	}
+
+	.scope input[type='checkbox'] {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--accent);
+	}
+
+	.create-error {
+		margin-top: 1rem;
+	}
+
+	.created-token {
+		margin-top: 1.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.created-warning {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem 1rem;
+		background: rgba(251, 191, 36, 0.1);
+		border: 1px solid rgba(251, 191, 36, 0.25);
+		border-radius: var(--radius-sm);
+		color: var(--warning);
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.tokens-card {
+		margin-top: 1.5rem;
+	}
+
+	.tokens-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.tokens-header h2 {
+		margin: 0;
+	}
+
+	.action-cell {
+		text-align: right;
+	}
+
+	.empty-row {
+		text-align: center;
+		padding: 2rem 0.75rem;
 	}
 </style>

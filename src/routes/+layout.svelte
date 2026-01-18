@@ -50,6 +50,7 @@
 			<a href="/settings/tokens">Tokens</a>
 			<a href="/status">Status</a>
 			<a href="/api">API</a>
+			<span class="nav__divider" aria-hidden="true"></span>
 			<a href="https://x07lang.org/" target="_blank" rel="noopener noreferrer">x07lang.org</a>
 			<a href="https://github.com/x07lang/x07" target="_blank" rel="noopener noreferrer">GitHub</a>
 		</nav>
@@ -73,9 +74,14 @@
 </main>
 
 <footer class="footer">
-	<div class="container muted footer__inner">
-		<span>x07.io — X07 package registry</span>
+	<div class="container footer__inner">
+		<span class="footer__brand muted">
+			<span>x07.io</span>
+			<span>·</span>
+			<span>The X07 package registry</span>
+		</span>
 		<span class="footer__links">
+			<a href="/docs">Documentation</a>
 			<a href="https://x07lang.org/" target="_blank" rel="noopener noreferrer">x07lang.org</a>
 			<a href="https://github.com/x07lang/x07" target="_blank" rel="noopener noreferrer">GitHub</a>
 		</span>
@@ -83,91 +89,133 @@
 </footer>
 
 <style>
-	.code-inline {
-		font-family: var(--mono);
-	}
-
 	.header {
 		position: sticky;
 		top: 0;
-		backdrop-filter: blur(12px);
-		background: rgba(11, 15, 20, 0.72);
+		backdrop-filter: blur(16px) saturate(1.5);
+		-webkit-backdrop-filter: blur(16px) saturate(1.5);
+		background: rgba(10, 14, 19, 0.8);
 		border-bottom: 1px solid var(--border);
-		z-index: 10;
+		z-index: 100;
 	}
 
 	.header__inner {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 1rem;
-		flex-wrap: wrap;
+		gap: 1.5rem;
+		padding-top: 0.85rem;
+		padding-bottom: 0.85rem;
 	}
 
 	.brand {
 		color: var(--text);
-		font-weight: 800;
-		letter-spacing: 0.2px;
+		font-weight: 700;
+		font-size: 1.1rem;
+		letter-spacing: -0.01em;
 		display: flex;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.6rem;
+		transition: opacity var(--transition-fast);
 	}
 
 	.brand:hover {
 		text-decoration: none;
+		opacity: 0.85;
 	}
 
 	.brand__mark {
 		display: block;
+		border-radius: 6px;
 	}
 
 	.nav {
 		display: flex;
-		gap: 0.85rem;
+		align-items: center;
+		gap: 0.25rem;
 		flex-wrap: wrap;
 		justify-content: flex-end;
 	}
 
 	.nav a {
 		color: var(--muted);
-		font-weight: 600;
-		padding: 0.35rem 0.45rem;
-		border-radius: 10px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		padding: 0.45rem 0.7rem;
+		border-radius: var(--radius-sm);
+		transition: color var(--transition-fast), background var(--transition-fast);
 	}
 
 	.nav a:hover {
 		color: var(--text);
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--panel-hover);
 		text-decoration: none;
+	}
+
+	.nav__divider {
+		width: 1px;
+		height: 1rem;
+		background: var(--border);
+		margin: 0 0.5rem;
 	}
 
 	.footer {
 		border-top: 1px solid var(--border);
-		margin-top: 3rem;
-		padding: 1.5rem 0;
-		background: rgba(0, 0, 0, 0.15);
+		margin-top: 4rem;
+		padding: 2rem 0;
+		background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.15));
 	}
 
 	.footer__inner {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 1rem;
+		gap: 1.5rem;
 		flex-wrap: wrap;
+		font-size: 0.9rem;
+	}
+
+	.footer__brand {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 	}
 
 	.footer__links {
 		display: inline-flex;
-		gap: 0.85rem;
+		gap: 1.25rem;
 	}
 
 	.footer__links a {
 		color: var(--muted);
-		font-weight: 600;
+		font-weight: 500;
+		transition: color var(--transition-fast);
 	}
 
 	.footer__links a:hover {
 		color: var(--text);
 		text-decoration: none;
+	}
+
+	@media (max-width: 640px) {
+		.header__inner {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.75rem;
+		}
+
+		.nav {
+			width: 100%;
+			justify-content: flex-start;
+		}
+
+		.nav__divider {
+			display: none;
+		}
+
+		.footer__inner {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 	}
 </style>

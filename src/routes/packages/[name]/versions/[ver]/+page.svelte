@@ -135,95 +135,118 @@
 	}
 </script>
 
-<h1>{name}@{ver}</h1>
+<div class="page-header">
+	<div class="breadcrumb muted">
+		<a href="/packages">Packages</a>
+		<span>/</span>
+		<a href="/packages/{name}">{name}</a>
+		<span>/</span>
+		<span>v{ver}</span>
+	</div>
+	<div class="page-header__top">
+		<h1><span class="pkg-name">{name}</span><span class="pkg-ver">@{ver}</span></h1>
+		{#if entry?.yanked}
+			<span class="badge badge--yanked">yanked</span>
+		{:else if entry}
+			<span class="badge badge--accent">ok</span>
+		{/if}
+		{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
+			<span class="badge badge--accent">official</span>
+		{/if}
+	</div>
+	{#if meta?.package.description}
+		<p class="page-header__desc">{meta.package.description}</p>
+	{/if}
+</div>
 
 {#if error}
-	<div class="card" style="margin-top: 1rem;">
+	<div class="card">
 		<ErrorBox {error} />
 	</div>
 {:else if !entry || !meta}
-	<p class="muted">Loading…</p>
+	<p class="muted loading">Loading version details…</p>
 {:else}
 	<div class="grid">
 		<section class="card">
-			<h2>Release</h2>
-			{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
-				<p class="muted">
-					<span class="badge">official</span>
-				</p>
-			{/if}
-			{#if meta.package.description}
-				<p class="muted">{meta.package.description}</p>
-			{/if}
-			<p class="muted">
-				Status:
-				{#if entry.yanked}
-					<span class="badge badge--yanked">yanked</span>
-				{:else}
-					<span class="badge">ok</span>
-				{/if}
-			</p>
-			<p class="muted">Checksum</p>
-			<div class="checksum">
-				<code class="code-inline">{entry.cksum}</code>
-				<CopyButton label="Copy sha256" text={entry.cksum} />
+			<h2>Release Details</h2>
+			<div class="release-info">
+				<div class="info-row">
+					<span class="info-label">Checksum (SHA-256)</span>
+					<div class="checksum">
+						<code class="code-inline">{entry.cksum}</code>
+						<CopyButton label="Copy" text={entry.cksum} />
+					</div>
+				</div>
 			</div>
+
 			{#if entry.yanked}
-				<hr class="divider" />
-				<p class="muted">
-					This version is yanked. It remains available for reproducibility, but should not be used for new installs.
-				</p>
-			{/if}
-			{#if downloadUrl}
-				<p>
-					<a class="btn" href={downloadUrl} rel="nofollow">Download</a>
-				</p>
+				<div class="yank-notice">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="12" cy="12" r="10"></circle>
+						<line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+					</svg>
+					<span>This version is yanked. It remains available for reproducibility, but should not be used for new installs.</span>
+				</div>
 			{/if}
 
-			{#if canYank}
-				<hr class="divider" />
-				{#if yankError}
-					<ErrorBox title="Yank failed" error={yankError} />
+			<div class="release-actions">
+				{#if downloadUrl}
+					<a class="btn btn--primary" href={downloadUrl} rel="nofollow">Download v{ver}</a>
 				{/if}
-				<button class="btn" disabled={yankBusy} onclick={toggleYank}>
-					{#if entry.yanked}Un-yank{:else}Yank{/if}
-				</button>
+				<a class="btn btn--ghost" href="/packages/{name}">View all versions</a>
+			</div>
+
+			{#if canYank}
+				<div class="yank-section">
+					<h3>Owner Actions</h3>
+					{#if yankError}
+						<div style="margin-bottom: 1rem;">
+							<ErrorBox title="Yank failed" error={yankError} />
+						</div>
+					{/if}
+					<button class="btn" class:btn--yanked={!entry.yanked} disabled={yankBusy} onclick={toggleYank}>
+						{#if entry.yanked}Un-yank version{:else}Yank version{/if}
+					</button>
+				</div>
 			{/if}
 		</section>
 
 		<section class="card">
-			<h2>Agent panel</h2>
-			{#if installSnippet}
-				<CopyCode label="Copy install commands" code={installSnippet} />
-			{/if}
-			{#if verifySnippet}
-				<CopyCode label="Copy verify snippet" code={verifySnippet} />
-			{/if}
-			<CopyJson label="Copy metadata JSON" value={meta} />
+			<h2>Quick Start</h2>
+			<div class="snippets">
+				{#if installSnippet}
+					<CopyCode label="Copy install commands" code={installSnippet} />
+				{/if}
+				{#if verifySnippet}
+					<CopyCode label="Copy verify snippet" code={verifySnippet} />
+				{/if}
+				<CopyJson label="Copy metadata JSON" value={meta} />
+			</div>
 		</section>
 	</div>
 
-	<section class="card" style="margin-top: 1rem;">
-		<h2>Modules</h2>
+	<section class="card modules-card">
+		<div class="modules-header">
+			<h2>Modules</h2>
+			<span class="muted">{modules.length} module{modules.length === 1 ? '' : 's'}</span>
+		</div>
 		{#if modules.length === 0}
-			<p class="muted">—</p>
+			<p class="muted">No modules exported</p>
 		{:else}
 			<table>
 				<thead>
 					<tr>
 						<th>Module ID</th>
 						<th>Archive path</th>
-						<th>Exports</th>
-						<th>Copy</th>
+						<th></th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each modules as m}
 						<tr>
 							<td><code class="code-inline">{m.moduleId}</code></td>
-							<td><code class="code-inline">{m.archivePath}</code></td>
-							<td class="muted">—</td>
-							<td><CopyButton label="Copy module ID" text={m.moduleId} /></td>
+							<td class="muted"><code>{m.archivePath}</code></td>
+							<td class="action-cell"><CopyButton label="Copy" text={m.moduleId} /></td>
 						</tr>
 					{/each}
 				</tbody>
@@ -231,28 +254,85 @@
 		{/if}
 	</section>
 
-	<details class="card" style="margin-top: 1rem;">
-		<summary class="summary">Manifest</summary>
-		<CopyJson label="Copy x07-package.json" value={meta.package} />
+	<details class="card manifest-card">
+		<summary class="manifest-summary">
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<polyline points="9 18 15 12 9 6"></polyline>
+			</svg>
+			Package Manifest
+		</summary>
+		<div class="manifest-body">
+			<CopyJson label="Copy x07-package.json" value={meta.package} />
+		</div>
 	</details>
 {/if}
 
 <style>
-	.code-inline {
+	.page-header {
+		margin-bottom: 1.5rem;
+	}
+
+	.breadcrumb {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.9rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.breadcrumb a {
+		color: var(--muted);
+	}
+
+	.breadcrumb a:hover {
+		color: var(--accent);
+	}
+
+	.page-header__top {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.page-header__top h1 {
+		margin: 0;
+	}
+
+	.pkg-name {
 		font-family: var(--mono);
+	}
+
+	.pkg-ver {
+		color: var(--muted);
+		font-weight: 400;
+	}
+
+	.page-header__desc {
+		margin: 0.5rem 0 0;
+		color: var(--muted);
+		font-size: 1.05rem;
 	}
 
 	.grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 1rem;
-		margin-top: 1rem;
+		gap: 1.5rem;
 	}
 
-	.divider {
-		border: 0;
-		border-top: 1px solid var(--border);
-		margin: 1rem 0;
+	.release-info {
+		margin-bottom: 1.25rem;
+	}
+
+	.info-row {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.info-label {
+		font-size: 0.85rem;
+		color: var(--muted);
 	}
 
 	.checksum {
@@ -260,13 +340,118 @@
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 0.75rem;
-		margin-bottom: 0.75rem;
 	}
 
-	.summary {
+	.checksum .code-inline {
+		font-size: 0.8rem;
+		word-break: break-all;
+	}
+
+	.yank-notice {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		padding: 0.85rem 1rem;
+		background: var(--danger-subtle);
+		border: 1px solid rgba(248, 113, 113, 0.25);
+		border-radius: var(--radius-sm);
+		color: var(--danger);
+		font-size: 0.9rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.yank-notice svg {
+		flex-shrink: 0;
+		margin-top: 0.1rem;
+	}
+
+	.release-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.yank-section {
+		margin-top: 1.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.yank-section h3 {
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.btn--yanked {
+		border-color: rgba(248, 113, 113, 0.3);
+		background: var(--danger-subtle);
+		color: var(--danger);
+	}
+
+	.btn--yanked:hover {
+		background: rgba(248, 113, 113, 0.2);
+		border-color: rgba(248, 113, 113, 0.5);
+		box-shadow: 0 0 16px rgba(248, 113, 113, 0.2);
+	}
+
+	.snippets {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.modules-card {
+		margin-top: 1.5rem;
+	}
+
+	.modules-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.modules-header h2 {
+		margin: 0;
+	}
+
+	.action-cell {
+		text-align: right;
+	}
+
+	.manifest-card {
+		margin-top: 1.5rem;
+	}
+
+	.manifest-summary {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		cursor: pointer;
-		font-weight: 700;
-		margin-bottom: 0.75rem;
+		font-weight: 600;
+		color: var(--text-secondary);
+		padding: 0.25rem 0;
+	}
+
+	.manifest-summary:hover {
+		color: var(--text);
+	}
+
+	.manifest-summary svg {
+		transition: transform var(--transition-fast);
+	}
+
+	details[open] .manifest-summary svg {
+		transform: rotate(90deg);
+	}
+
+	.manifest-body {
+		margin-top: 1rem;
+	}
+
+	.loading {
+		padding: 2rem 0;
 	}
 
 	@media (max-width: 860px) {

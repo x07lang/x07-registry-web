@@ -63,23 +63,35 @@
 </script>
 
 <div class="hero">
-	<section class="card hero__left">
-		<h1>X07 package registry</h1>
-		<p class="muted">Search and fetch source-only X07 packages.</p>
+	<section class="card card--glow hero__main">
+		<div class="hero__header">
+			<h1 class="hero__title">X07 Package Registry</h1>
+			<p class="hero__subtitle">Discover, share, and fetch source-only X07 packages</p>
+		</div>
 
 		<form class="search" onsubmit={submit}>
-			<label for="q">Search</label>
-			<input id="q" name="q" type="search" placeholder="package name" bind:value={q} />
+			<div class="search__field">
+				<svg class="search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="11" cy="11" r="8"></circle>
+					<path d="m21 21-4.35-4.35"></path>
+				</svg>
+				<input id="q" name="q" type="search" placeholder="Search packages…" bind:value={q} />
+			</div>
 			<div class="search__actions">
-				<button class="btn" type="submit">Search</button>
+				<button class="btn btn--primary" type="submit">Search</button>
+				<a class="btn btn--ghost" href="/packages">Browse all</a>
 				<a class="btn" href="/docs/publish">Publish</a>
 			</div>
 		</form>
 	</section>
 
-	<section class="card hero__right">
+	<section class="card hero__aside">
 		<h2>Quick start</h2>
-		<p class="muted">Index base: <code class="code-inline">{indexBase ?? '—'}</code></p>
+		<p class="muted">Configure your project to use the public registry index.</p>
+		<div class="hero__index">
+			<span class="muted">Index:</span>
+			<code class="code-inline">{indexBase ?? '—'}</code>
+		</div>
 		<CopyCode label="Copy CLI snippet" code={quickStart} />
 	</section>
 </div>
@@ -134,61 +146,136 @@
 </div>
 
 <style>
-	.code-inline {
-		font-family: var(--mono);
-	}
-
 	.hero {
 		display: grid;
-		grid-template-columns: 1.25fr 1fr;
-		gap: 1rem;
-		align-items: start;
-		margin-top: 1.25rem;
+		grid-template-columns: 1.4fr 1fr;
+		gap: 1.5rem;
+		align-items: stretch;
+		margin-top: 2rem;
 	}
 
-	.hero h1 {
+	.hero__main {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.hero__header {
+		margin-bottom: 1.75rem;
+	}
+
+	.hero__title {
+		font-size: 2.5rem;
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		margin: 0 0 0.5rem;
+		background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	.hero__subtitle {
+		font-size: 1.1rem;
+		color: var(--muted);
 		margin: 0;
-		font-size: 2.2rem;
+	}
+
+	.hero__aside {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.hero__aside h2 {
+		margin-bottom: 0;
+	}
+
+	.hero__index {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.9rem;
 	}
 
 	.search {
-		margin-top: 1.25rem;
-		display: grid;
-		gap: 0.6rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-top: auto;
+	}
+
+	.search__field {
+		position: relative;
+	}
+
+	.search__field input {
+		padding-left: 2.75rem;
+	}
+
+	.search__icon {
+		position: absolute;
+		left: 1rem;
+		top: 50%;
+		transform: translateY(-50%);
+		color: var(--muted);
+		pointer-events: none;
 	}
 
 	.search__actions {
 		display: flex;
-		gap: 0.65rem;
+		flex-wrap: wrap;
+		gap: 0.75rem;
 	}
 
 	.grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 1rem;
-		margin-top: 1.25rem;
+		gap: 1.5rem;
+		margin-top: 2rem;
 	}
 
 	.list {
 		list-style: none;
 		padding: 0;
-		margin: 0.75rem 0 0 0;
-		display: grid;
-		gap: 0.4rem;
+		margin: 1rem 0 0 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 	}
 
 	.list li {
 		display: flex;
 		justify-content: space-between;
+		align-items: center;
 		gap: 0.75rem;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.list li:last-child {
+		border-bottom: none;
+	}
+
+	.list li:hover {
+		background: var(--panel-hover);
+		margin: 0 -0.75rem;
+		padding: 0.5rem 0.75rem;
+		border-radius: var(--radius-sm);
+		border-bottom-color: transparent;
 	}
 
 	.details {
-		margin-top: 0.75rem;
+		margin-top: 1rem;
 	}
 
 	.details summary {
 		cursor: pointer;
+		font-size: 0.9rem;
+		padding: 0.5rem 0;
+	}
+
+	.details summary:hover {
+		color: var(--text);
 	}
 
 	.details__body {
@@ -198,7 +285,13 @@
 	@media (max-width: 860px) {
 		.hero {
 			grid-template-columns: 1fr;
+			margin-top: 1.5rem;
 		}
+
+		.hero__title {
+			font-size: 2rem;
+		}
+
 		.grid {
 			grid-template-columns: 1fr;
 		}

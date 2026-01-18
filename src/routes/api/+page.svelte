@@ -24,33 +24,79 @@
 	});
 </script>
 
-<h1>API</h1>
+<div class="page-header">
+	<h1>API Reference</h1>
+	<p class="muted">OpenAPI specification for the X07 registry API</p>
+</div>
 
-<div class="card" style="margin-top: 1rem;">
-	<p class="muted">
-		This page serves a pinned copy of the registry OpenAPI contract at
+<div class="card info-card">
+	<div class="info-card__icon">
+		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<circle cx="12" cy="12" r="10"></circle>
+			<line x1="12" y1="16" x2="12" y2="12"></line>
+			<line x1="12" y1="8" x2="12.01" y2="8"></line>
+		</svg>
+	</div>
+	<p>
+		The registry API follows the OpenAPI 3.0 specification.
 		{#if openapiUrl}
-			<a href={openapiUrl}>{openapiUrl}</a>.
+			View the spec at <a href={openapiUrl}>{openapiUrl}</a>
 		{:else}
-			<code class="code-inline">/openapi/openapi.json</code>.
+			Available at <code class="code-inline">/openapi/openapi.json</code>
 		{/if}
 	</p>
 </div>
 
 {#if error}
-	<div class="card" style="margin-top: 1rem;">
+	<div class="card" style="margin-top: 1.5rem;">
 		<ErrorBox title="OpenAPI unavailable" {error} />
 	</div>
 {:else if !openapiText}
-	<p class="muted">Loading…</p>
+	<p class="muted loading">Loading OpenAPI specification…</p>
 {:else}
-	<section class="card" style="margin-top: 1rem;">
+	<section class="card" style="margin-top: 1.5rem;">
+		<h2>OpenAPI Specification</h2>
 		<CopyCode label="Copy OpenAPI JSON" code={openapiText} />
 	</section>
 {/if}
 
 <style>
-	.code-inline {
-		font-family: var(--mono);
+	.page-header {
+		margin-bottom: 1.5rem;
+	}
+
+	.page-header h1 {
+		margin-bottom: 0.25rem;
+	}
+
+	.page-header p {
+		margin: 0;
+	}
+
+	.info-card {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+
+	.info-card__icon {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: var(--radius-sm);
+		background: var(--accent-subtle);
+		color: var(--accent);
+	}
+
+	.info-card p {
+		margin: 0;
+		color: var(--text-secondary);
+	}
+
+	.loading {
+		padding: 2rem 0;
 	}
 </style>

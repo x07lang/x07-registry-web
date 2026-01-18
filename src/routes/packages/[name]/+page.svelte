@@ -117,61 +117,76 @@
 	});
 </script>
 
-<h1>Package: {name}</h1>
+<div class="page-header">
+	<div class="page-header__top">
+		<h1>{name}</h1>
+		{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
+			<span class="badge badge--accent">official</span>
+		{/if}
+	</div>
+	{#if latestMeta?.package.description}
+		<p class="page-header__desc">{latestMeta.package.description}</p>
+	{/if}
+</div>
 
 {#if error}
 	<div class="card">
 		<ErrorBox {error} />
 	</div>
 {:else if !entries}
-	<p class="muted">Loading…</p>
+	<p class="muted loading">Loading package…</p>
 {:else}
 	<div class="grid">
 		<section class="card">
 			<h2>Overview</h2>
-			{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
-				<p class="muted">
-					<span class="badge">official</span>
-				</p>
-			{/if}
-			<p class="muted">Latest: {latest ?? 'none'}</p>
-			{#if owners}
-				<p class="muted">
-					Owners: <code class="code-inline">{owners.owners.join(', ') || '(none)'}</code>
-				</p>
-			{/if}
-			{#if latestMeta}
-				{#if latestMeta.package.description}
-					<p class="muted">{latestMeta.package.description}</p>
+			<div class="meta-list">
+				<div class="meta-item">
+					<span class="meta-label">Latest version</span>
+					<span class="meta-value">{latest ?? '—'}</span>
+				</div>
+				{#if owners}
+					<div class="meta-item">
+						<span class="meta-label">Owners</span>
+						<span class="meta-value"><code class="code-inline">{owners.owners.join(', ') || '(none)'}</code></span>
+					</div>
 				{/if}
-				<p class="muted">
-					Manifest schema: <code class="code-inline">{latestMeta.package.schema_version}</code>
-				</p>
-				<p class="muted">
-					Modules ({latestMeta.package.modules.length}): <code class="code-inline">{latestMeta.package.module_root}</code>
-				</p>
-			{/if}
+				{#if latestMeta}
+					<div class="meta-item">
+						<span class="meta-label">Schema version</span>
+						<span class="meta-value"><code class="code-inline">{latestMeta.package.schema_version}</code></span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">Modules</span>
+						<span class="meta-value">{latestMeta.package.modules.length} in <code class="code-inline">{latestMeta.package.module_root}</code></span>
+					</div>
+				{/if}
+			</div>
 
 			{#if latestDownload}
-				<p>
-					<a class="btn" href={latestDownload} rel="nofollow">Download latest</a>
-				</p>
+				<div class="card-actions">
+					<a class="btn btn--primary" href={latestDownload} rel="nofollow">Download v{latest}</a>
+				</div>
 			{/if}
 		</section>
 
 		<section class="card">
-			<h2>Quickstart</h2>
-			{#if installSnippet}<CopyCode label="Copy install commands" code={installSnippet} />{/if}
-			{#if importSnippet}<CopyCode label="Copy module IDs" code={importSnippet} />{/if}
-			{#if verifySnippet}<CopyCode label="Copy verify snippet" code={verifySnippet} />{/if}
-			{#if latestMeta}
-				<CopyJson label="Copy latest metadata JSON" value={latestMeta} />
-			{/if}
+			<h2>Quick start</h2>
+			<div class="snippets">
+				{#if installSnippet}<CopyCode label="Copy install commands" code={installSnippet} />{/if}
+				{#if importSnippet}<CopyCode label="Copy module IDs" code={importSnippet} />{/if}
+				{#if verifySnippet}<CopyCode label="Copy verify snippet" code={verifySnippet} />{/if}
+				{#if latestMeta}
+					<CopyJson label="Copy latest metadata JSON" value={latestMeta} />
+				{/if}
+			</div>
 		</section>
 	</div>
 
-	<section class="card" style="margin-top: 1rem;">
-		<h2>Versions</h2>
+	<section class="card versions-card">
+		<div class="versions-header">
+			<h2>Versions</h2>
+			<span class="muted">{sortedEntries.length} release{sortedEntries.length === 1 ? '' : 's'}</span>
+		</div>
 		<table>
 			<thead>
 				<tr>
@@ -190,7 +205,7 @@
 							{#if e.yanked}
 								<span class="badge badge--yanked">yanked</span>
 							{:else}
-								<span class="badge">ok</span>
+								<span class="badge badge--accent">ok</span>
 							{/if}
 						</td>
 						<td class="muted"><code class="code-inline">{e.cksum.slice(0, 12)}…</code></td>
@@ -202,20 +217,110 @@
 {/if}
 
 <style>
-	.code-inline {
+	.page-header {
+		margin-bottom: 1.5rem;
+	}
+
+	.page-header__top {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.page-header__top h1 {
+		margin: 0;
 		font-family: var(--mono);
+		font-size: 1.75rem;
+	}
+
+	.page-header__desc {
+		margin: 0.5rem 0 0;
+		color: var(--muted);
+		font-size: 1.05rem;
 	}
 
 	.grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
+		gap: 1.5rem;
+	}
+
+	.meta-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.meta-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
 		gap: 1rem;
-		margin-top: 1rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.meta-item:last-child {
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+
+	.meta-label {
+		font-size: 0.9rem;
+		color: var(--muted);
+	}
+
+	.meta-value {
+		font-size: 0.9rem;
+		text-align: right;
+	}
+
+	.card-actions {
+		margin-top: 1.25rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.snippets {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.versions-card {
+		margin-top: 1.5rem;
+	}
+
+	.versions-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.versions-header h2 {
+		margin: 0;
+	}
+
+	.loading {
+		padding: 2rem 0;
 	}
 
 	@media (max-width: 860px) {
 		.grid {
 			grid-template-columns: 1fr;
+		}
+
+		.meta-item {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.25rem;
+		}
+
+		.meta-value {
+			text-align: left;
 		}
 	}
 </style>
