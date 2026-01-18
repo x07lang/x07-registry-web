@@ -12,6 +12,7 @@
 		validatePackageName
 	} from '$lib/api/registry';
 	import type { ApiError, IndexConfig, IndexEntry, OwnersResponse, PackageMetadataResponse } from '$lib/api/types';
+	import { getRegistryWebConfig } from '$lib/config_runtime';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
 	import { isOfficialPackage } from '$lib/ui/official';
@@ -26,6 +27,7 @@
 	let latestMeta = $state<PackageMetadataResponse | null>(null);
 	let latestDownload = $state<string | null>(null);
 	let owners = $state<OwnersResponse | null>(null);
+	let indexBase = $state<string | null>(null);
 	let error = $state<ApiError | null>(null);
 
 	$effect(() => {
@@ -37,6 +39,7 @@
 		latestMeta = null;
 		latestDownload = null;
 		owners = null;
+		indexBase = null;
 		error = null;
 
 		if (!pkgName) {
@@ -48,15 +51,17 @@
 		(async () => {
 			try {
 				validatePackageName(pkgName);
-				const [cfg, gotEntries, gotOwners] = await Promise.all([
+				const [cfg, gotEntries, gotOwners, webCfg] = await Promise.all([
 					getIndexConfig(),
 					getIndexEntries(pkgName),
-					getOwners(pkgName)
+					getOwners(pkgName),
+					getRegistryWebConfig()
 				]);
 				if (cancelled) return;
 				indexConfig = cfg;
 				entries = gotEntries;
 				owners = gotOwners;
+				indexBase = webCfg.index_base;
 				const latestVer = latestNonYankedVersion(gotEntries);
 				latest = latestVer;
 				if (latestVer) {
@@ -100,7 +105,8 @@
 
 	let installSnippet = $derived.by(() => {
 		if (!latest) return '';
-		return `x07 pkg add ${name}@${latest}\nx07 pkg lock\n`;
+		const base = indexBase ?? '<index_base>';
+		return `x07 pkg add ${name}@${latest}\nx07 pkg lock --index sparse+${base}\n`;
 	});
 
 	let importSnippet = $derived.by(() => {

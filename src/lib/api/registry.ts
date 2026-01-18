@@ -4,7 +4,7 @@ import { getRegistryWebConfig } from '$lib/config_runtime';
 
 import { ApiClientError, fetchJson, fetchText } from './client';
 import {
-	decodeAccountResponse,
+	decodeAuthSessionResponse,
 	decodeCatalog,
 	decodeIndexConfig,
 	decodeIndexEntry,
@@ -17,7 +17,7 @@ import {
 	decodeYankResponse
 } from './decode';
 import type {
-	AccountResponse,
+	AuthSessionResponse,
 	Catalog,
 	IndexConfig,
 	IndexEntry,
@@ -179,56 +179,70 @@ export async function getOwners(name: string): Promise<OwnersResponse> {
 	}
 }
 
-export async function getAccount(token: string): Promise<AccountResponse> {
+export async function getAuthSession(): Promise<AuthSessionResponse> {
 	const cfg = await getIndexConfig();
-	const url = new URL('account', cfg.api).toString();
-	return fetchJson(url, decodeAccountResponse, undefined, {
-		headers: { Authorization: `Bearer ${token}` }
+	const url = new URL('auth/session', cfg.api).toString();
+	return fetchJson(url, decodeAuthSessionResponse, undefined, {
+		credentials: 'include'
 	});
 }
 
-export async function listTokens(token: string): Promise<TokenListResponse> {
+export async function logout(csrfToken: string): Promise<void> {
+	const cfg = await getIndexConfig();
+	const url = new URL('auth/logout', cfg.api).toString();
+	await fetchText(url, 10_000, {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'X-X07-CSRF': csrfToken }
+	});
+}
+
+export async function listTokens(): Promise<TokenListResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL('tokens', cfg.api).toString();
-	return fetchJson(url, decodeTokenListResponse, undefined, {
-		headers: { Authorization: `Bearer ${token}` }
-	});
+	return fetchJson(url, decodeTokenListResponse, undefined, { credentials: 'include' });
 }
 
 export async function createToken(
-	token: string,
 	label: string,
-	scopes: string[]
+	scopes: string[],
+	csrfToken: string
 ): Promise<TokenCreateResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL('tokens', cfg.api).toString();
 	return fetchJson(url, decodeTokenCreateResponse, undefined, {
 		method: 'POST',
-		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json', 'X-X07-CSRF': csrfToken },
 		body: JSON.stringify({ label, scopes })
 	});
 }
 
-export async function revokeToken(token: string, tokenId: string): Promise<SimpleOkResponse> {
+export async function revokeToken(
+	tokenId: string,
+	csrfToken: string
+): Promise<SimpleOkResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL(`tokens/${tokenId}/revoke`, cfg.api).toString();
 	return fetchJson(url, decodeSimpleOkResponse, undefined, {
 		method: 'POST',
-		headers: { Authorization: `Bearer ${token}` }
+		credentials: 'include',
+		headers: { 'X-X07-CSRF': csrfToken }
 	});
 }
 
 export async function yankVersion(
-	token: string,
 	name: string,
 	version: string,
-	yanked: boolean
+	yanked: boolean,
+	csrfToken: string
 ): Promise<YankResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL(`packages/${name}/${version}/yank`, cfg.api).toString();
 	return fetchJson(url, decodeYankResponse, undefined, {
 		method: 'POST',
-		headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json', 'X-X07-CSRF': csrfToken },
 		body: JSON.stringify({ yanked })
 	});
 }

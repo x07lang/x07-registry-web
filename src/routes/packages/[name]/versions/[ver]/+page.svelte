@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 
-	import { loadAuthToken } from '$lib/auth';
+	import { getRegistryWebConfig } from '$lib/config_runtime';
 	import {
-		getAccount,
+		getAuthSession,
 		getIndexConfig,
 		getDownloadUrl,
 		getIndexEntries,
@@ -12,7 +12,13 @@
 		validatePackageName,
 		yankVersion
 	} from '$lib/api/registry';
-	import type { AccountResponse, ApiError, IndexConfig, IndexEntry, PackageMetadataResponse } from '$lib/api/types';
+	import type {
+		ApiError,
+		AuthSessionUser,
+		IndexConfig,
+		IndexEntry,
+		PackageMetadataResponse
+	} from '$lib/api/types';
 	import CopyButton from '$lib/ui/components/CopyButton.svelte';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
@@ -27,15 +33,16 @@
 	let entry = $state<IndexEntry | null>(null);
 	let meta = $state<PackageMetadataResponse | null>(null);
 	let downloadUrl = $state<string | null>(null);
-	let account = $state<AccountResponse | null>(null);
-	let token = $state<string | null>(null);
+	let indexBase = $state<string | null>(null);
+	let user = $state<AuthSessionUser | null>(null);
+	let csrfToken = $state<string | null>(null);
 
 	let error = $state<ApiError | null>(null);
 	let yankError = $state<ApiError | null>(null);
 	let yankBusy = $state(false);
 
 	onMount(() => {
-		token = loadAuthToken();
+		// Session is loaded as part of the main effect.
 	});
 
 	$effect(() => {
@@ -45,8 +52,10 @@
 		entry = null;
 		meta = null;
 		downloadUrl = null;
-		account = null;
 		indexConfig = null;
+		indexBase = null;
+		user = null;
+		csrfToken = null;
 		error = null;
 		yankError = null;
 
@@ -54,9 +63,18 @@
 		(async () => {
 			try {
 				validatePackageName(pkgName);
-				const cfg = await getIndexConfig();
+				const [cfg, webCfg, session] = await Promise.all([
+					getIndexConfig(),
+					getRegistryWebConfig(),
+					getAuthSession()
+				]);
 				if (cancelled) return;
 				indexConfig = cfg;
+				indexBase = webCfg.index_base;
+				if (session.authenticated && session.user && session.csrf_token) {
+					user = session.user;
+					csrfToken = session.csrf_token;
+				}
 
 				const entries = await getIndexEntries(pkgName);
 				const found = entries.find((e) => e.version === version) ?? null;
@@ -67,12 +85,6 @@
 				if (cancelled) return;
 				meta = m;
 				downloadUrl = dl;
-
-				if (token) {
-					const acct = await getAccount(token);
-					if (cancelled) return;
-					account = acct;
-				}
 			} catch (err) {
 				if (cancelled) return;
 				error = errorToApiError(err);
@@ -85,12 +97,13 @@
 	});
 
 	let canYank = $derived.by(() => {
-		return account?.scopes?.includes('owner.manage') ?? false;
+		return user?.scopes?.includes('owner.manage') ?? false;
 	});
 
 	let installSnippet = $derived.by(() => {
 		if (!entry) return '';
-		return `x07 pkg add ${name}@${ver}\nx07 pkg lock\n`;
+		const base = indexBase ?? '<index_base>';
+		return `x07 pkg add ${name}@${ver}\nx07 pkg lock --index sparse+${base}\n`;
 	});
 
 	let verifySnippet = $derived.by(() => {
@@ -115,8 +128,8 @@
 	});
 
 	async function toggleYank() {
-		if (!token) {
-			yankError = { code: 'X07WEB_AUTH', message: 'missing auth token (go to /settings/tokens)' };
+		if (!csrfToken) {
+			yankError = { code: 'X07WEB_AUTH', message: 'not signed in (go to /settings/tokens)' };
 			return;
 		}
 		if (!entry) return;
@@ -124,7 +137,7 @@
 		yankBusy = true;
 		yankError = null;
 		try {
-			await yankVersion(token, name, ver, !entry.yanked);
+			await yankVersion(name, ver, !entry.yanked, csrfToken);
 			const entries = await getIndexEntries(name);
 			entry = entries.find((e) => e.version === ver) ?? entry;
 		} catch (err) {

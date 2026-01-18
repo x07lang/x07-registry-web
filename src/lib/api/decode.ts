@@ -1,5 +1,6 @@
 import type {
 	AccountResponse,
+	AuthSessionResponse,
 	Catalog,
 	IndexConfig,
 	IndexEntry,
@@ -48,6 +49,11 @@ function expectOptionalStringArray(value: unknown, field: string): string[] | un
 function expectOptionalString(value: unknown, field: string): string | undefined {
 	if (value === undefined || value === null) return undefined;
 	return expectString(value, field);
+}
+
+function expectOptionalNumber(value: unknown, field: string): number | undefined {
+	if (value === undefined || value === null) return undefined;
+	return expectNumber(value, field);
 }
 
 export function decodeIndexConfig(raw: unknown): IndexConfig {
@@ -139,6 +145,45 @@ export function decodeAccountResponse(raw: unknown): AccountResponse {
 	const token_id = expectString(raw.token_id, 'token_id');
 	const scopes = expectStringArray(raw.scopes, 'scopes');
 	return { ok: true, user_id, handle, token_id, scopes };
+}
+
+export function decodeAuthSessionResponse(raw: unknown): AuthSessionResponse {
+	if (!isRecord(raw)) throw new Error('auth session response must be an object');
+	if (raw.ok !== true) throw new Error('auth session response ok must be true');
+	const authenticated = expectBool(raw.authenticated, 'authenticated');
+	if (!authenticated) return { ok: true, authenticated: false };
+	const csrf_token = expectString(raw.csrf_token, 'csrf_token');
+	if (!isRecord(raw.user)) throw new Error('user must be an object');
+	const userRaw = raw.user as Record<string, unknown>;
+	const id = expectString(userRaw.id, 'id');
+	const handle = expectString(userRaw.handle, 'handle');
+	const github_user_id = expectOptionalNumber(userRaw.github_user_id, 'github_user_id');
+	const github_login = expectOptionalString(userRaw.github_login, 'github_login');
+	const avatar_url = expectOptionalString(userRaw.avatar_url, 'avatar_url');
+	const profile_url = expectOptionalString(userRaw.profile_url, 'profile_url');
+	const email = expectOptionalString(userRaw.email, 'email');
+	const email_verified = expectBool(userRaw.email_verified, 'email_verified');
+	const email_primary = expectBool(userRaw.email_primary, 'email_primary');
+	const is_admin = expectBool(userRaw.is_admin, 'is_admin');
+	const scopes = expectStringArray(userRaw.scopes, 'scopes');
+	return {
+		ok: true,
+		authenticated: true,
+		csrf_token,
+		user: {
+			id,
+			handle,
+			github_user_id,
+			github_login,
+			avatar_url,
+			profile_url,
+			email,
+			email_verified,
+			email_primary,
+			is_admin,
+			scopes
+		}
+	};
 }
 
 export function decodeTokenInfo(raw: unknown): TokenInfo {

@@ -1,17 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { clearAuthToken, loadAuthToken, storeAuthToken } from '$lib/auth';
-	import { createToken, getAccount, listTokens, revokeToken } from '$lib/api/registry';
-	import type { AccountResponse, ApiError, TokenCreateResponse, TokenInfo } from '$lib/api/types';
+	import { createToken, getAuthSession, getIndexConfig, listTokens, logout, revokeToken } from '$lib/api/registry';
+	import type { ApiError, AuthSessionUser, IndexConfig, TokenCreateResponse, TokenInfo } from '$lib/api/types';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
 
-	let tokenInput = $state('');
-	let token = $state<string | null>(null);
-
-	let account = $state<AccountResponse | null>(null);
+	let indexConfig = $state<IndexConfig | null>(null);
+	let user = $state<AuthSessionUser | null>(null);
+	let csrfToken = $state<string | null>(null);
 	let tokens = $state<TokenInfo[] | null>(null);
 	let error = $state<ApiError | null>(null);
 
@@ -22,58 +20,57 @@
 	let busy = $state(false);
 
 	onMount(() => {
-		token = loadAuthToken();
-		tokenInput = token ?? '';
+		void refresh();
 	});
 
-	$effect(() => {
-		const t = token;
-		account = null;
-		tokens = null;
+	async function refresh() {
+		busy = true;
 		error = null;
 		createError = null;
 		created = null;
-
-		if (!t) return;
-
-		let cancelled = false;
-		(async () => {
-			try {
-				const [acct, list] = await Promise.all([getAccount(t), listTokens(t)]);
-				if (cancelled) return;
-				account = acct;
-				tokens = list.tokens;
-				createScopes = acct.scopes.includes('publish') ? ['publish'] : [];
-			} catch (err) {
-				if (cancelled) return;
-				error = errorToApiError(err);
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	function saveToken() {
-		const next = tokenInput.trim();
-		if (!next) {
-			clearAuthToken();
-			token = null;
-			return;
+		user = null;
+		csrfToken = null;
+		tokens = null;
+		try {
+			indexConfig = await getIndexConfig();
+			const session = await getAuthSession();
+			if (!session.authenticated || !session.user || !session.csrf_token) return;
+			user = session.user;
+			csrfToken = session.csrf_token;
+			const list = await listTokens();
+			tokens = list.tokens;
+			createScopes = user.scopes.includes('publish') ? ['publish'] : [];
+		} catch (err) {
+			error = errorToApiError(err);
+		} finally {
+			busy = false;
 		}
-		storeAuthToken(next);
-		token = next;
 	}
 
-	function signOut() {
-		clearAuthToken();
-		tokenInput = '';
-		token = null;
+	function signIn() {
+		const cfg = indexConfig;
+		if (!cfg) return;
+		const url = new URL('auth/github/start', cfg.api);
+		url.searchParams.set('next', `${window.location.pathname}${window.location.search}`);
+		window.location.href = url.toString();
+	}
+
+	async function signOut() {
+		if (!csrfToken) return;
+		busy = true;
+		error = null;
+		try {
+			await logout(csrfToken);
+			await refresh();
+		} catch (err) {
+			error = errorToApiError(err);
+		} finally {
+			busy = false;
+		}
 	}
 
 	let availableScopes = $derived.by(() => {
-		return account?.scopes ?? [];
+		return user?.scopes ?? [];
 	});
 
 	function toggleScope(scope: string) {
@@ -84,15 +81,15 @@
 
 	async function submitCreate(e: SubmitEvent) {
 		e.preventDefault();
-		if (!token) return;
+		if (!csrfToken) return;
 
 		busy = true;
 		createError = null;
 		created = null;
 		try {
-			const resp = await createToken(token, createLabel, createScopes);
+			const resp = await createToken(createLabel, createScopes, csrfToken);
 			created = resp;
-			const list = await listTokens(token);
+			const list = await listTokens();
 			tokens = list.tokens;
 		} catch (err) {
 			createError = errorToApiError(err);
@@ -102,12 +99,12 @@
 	}
 
 	async function revoke(id: string) {
-		if (!token) return;
+		if (!csrfToken) return;
 		busy = true;
 		createError = null;
 		try {
-			await revokeToken(token, id);
-			const list = await listTokens(token);
+			await revokeToken(id, csrfToken);
+			const list = await listTokens();
 			tokens = list.tokens;
 		} catch (err) {
 			createError = errorToApiError(err);
@@ -124,19 +121,25 @@
 
 <section class="card auth-card">
 	<h2>Authentication</h2>
-	<p class="text-secondary">Enter your auth token to manage tokens and view account details.</p>
-	<div class="auth-form">
-		<div class="auth-field">
-			<label for="token">Auth token</label>
-			<input id="token" name="token" type="password" placeholder="x07t_…" bind:value={tokenInput} />
-		</div>
+	{#if user}
+		<p class="text-secondary">Signed in as <code class="code-inline">{user.handle}</code>.</p>
+		<p class="text-secondary">
+			Your GitHub account must have a verified email to publish.
+		</p>
+		<p class="text-secondary">
+			Next: follow <a href="/docs/publish">/docs/publish</a> to configure the CLI and publish packages.
+		</p>
 		<div class="auth-actions">
-			<button class="btn btn--primary" type="button" onclick={saveToken}>Authenticate</button>
-			{#if token}
-				<button class="btn btn--ghost" type="button" onclick={signOut}>Sign out</button>
-			{/if}
+			<button class="btn btn--ghost" type="button" disabled={busy} onclick={signOut}>Sign out</button>
 		</div>
-	</div>
+	{:else}
+		<p class="text-secondary">Sign in with GitHub to create and revoke tokens.</p>
+		<div class="auth-actions">
+			<button class="btn btn--primary" type="button" disabled={busy || !indexConfig} onclick={signIn}>
+				Sign in with GitHub
+			</button>
+		</div>
+	{/if}
 	{#if error}
 		<div class="auth-error">
 			<ErrorBox {error} />
@@ -144,27 +147,40 @@
 	{/if}
 </section>
 
-{#if token && account}
+{#if user}
 	<section class="card account-card">
 		<h2>Account Details</h2>
 		<div class="account-info">
 			<div class="account-row">
 				<span class="account-label">Handle</span>
-				<code class="code-inline">{account.handle}</code>
+				<code class="code-inline">{user.handle}</code>
 			</div>
 			<div class="account-row">
 				<span class="account-label">Scopes</span>
 				<div class="scope-badges">
-					{#each account.scopes as scope}
+					{#each user.scopes as scope}
 						<span class="badge badge--accent">{scope}</span>
 					{/each}
 				</div>
+			</div>
+			<div class="account-row">
+				<span class="account-label">Email</span>
+				{#if user.email}
+					<code class="code-inline">{user.email}</code>
+				{:else}
+					<span class="muted">—</span>
+				{/if}
+				{#if user.email_verified}
+					<span class="badge badge--accent">verified</span>
+				{:else}
+					<span class="badge badge--yanked">unverified</span>
+				{/if}
 			</div>
 		</div>
 	</section>
 {/if}
 
-{#if token}
+{#if user}
 	<section class="card create-card">
 		<h2>Create New Token</h2>
 		<form onsubmit={submitCreate} class="create-form">
@@ -174,9 +190,9 @@
 				<span class="form-hint muted">Optional identifier for this token</span>
 			</div>
 
-			<div class="form-field">
-				<label>Scopes</label>
-				<span class="form-hint muted">Must be a subset of your current token's scopes</span>
+			<fieldset class="form-field">
+				<legend>Scopes</legend>
+				<span class="form-hint muted">Must be a subset of your account scopes</span>
 				<div class="scopes">
 					{#each availableScopes as s}
 						<label class="scope">
@@ -189,7 +205,7 @@
 						</label>
 					{/each}
 				</div>
-			</div>
+			</fieldset>
 
 			<div class="form-actions">
 				<button class="btn btn--primary" type="submit" disabled={busy}>
@@ -220,7 +236,7 @@
 	</section>
 {/if}
 
-{#if token && tokens}
+{#if user && tokens}
 	<section class="card tokens-card">
 		<div class="tokens-header">
 			<h2>Your Tokens</h2>
@@ -292,17 +308,6 @@
 		margin-bottom: 0.5rem;
 	}
 
-	.auth-form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		margin-top: 1rem;
-	}
-
-	.auth-field {
-		flex: 1;
-	}
-
 	.auth-actions {
 		display: flex;
 		gap: 0.75rem;
@@ -361,6 +366,16 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
+	}
+
+	fieldset.form-field {
+		border: 0;
+		padding: 0;
+		margin: 0;
+	}
+
+	fieldset.form-field > legend {
+		padding: 0;
 	}
 
 	.form-hint {

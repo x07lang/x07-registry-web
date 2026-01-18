@@ -71,6 +71,27 @@ export type AccountResponse = {
 	scopes: string[];
 };
 
+export type AuthSessionUser = {
+	id: string;
+	handle: string;
+	github_user_id?: number;
+	github_login?: string;
+	avatar_url?: string;
+	profile_url?: string;
+	email?: string;
+	email_verified: boolean;
+	email_primary: boolean;
+	is_admin: boolean;
+	scopes: string[];
+};
+
+export type AuthSessionResponse = {
+	ok: true;
+	authenticated: boolean;
+	csrf_token?: string;
+	user?: AuthSessionUser;
+};
+
 export type TokenInfo = {
 	id: string;
 	label: string;

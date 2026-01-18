@@ -20,7 +20,7 @@
 
 	let snippet = $derived.by(() => {
 		const base = indexBase ?? '<index_base>';
-		return `# Login (store token locally)\n\nx07 pkg login --index sparse+${base} --token <TOKEN>\n\n# Publish a package directory\n\nx07 pkg publish --index sparse+${base} --package <DIR>\n`;
+		return `# Login (store token locally; prompts for token)\n\nx07 pkg login --index sparse+${base}\n\n# Login (non-interactive)\n\nprintf '%s' \"$X07_TOKEN\" | x07 pkg login --index sparse+${base} --token-stdin\n\n# Publish a package directory\n\nx07 pkg publish --index sparse+${base} --package <DIR>\n`;
 	});
 </script>
 
@@ -32,7 +32,21 @@
 		registry.
 	</p>
 	<p class="muted">
-		For web-based token management, use <a href="/settings/tokens">/settings/tokens</a>.
+		To browse packages, go to <a href="/packages">/packages</a> (or https://x07.io/packages).
+	</p>
+	<h2>Getting a token</h2>
+	<p class="muted">
+		Sign in with GitHub on <a href="/settings/tokens">/settings/tokens</a>, then create a token with the
+		<code class="code-inline">publish</code> scope. Don’t share tokens between people.
+	</p>
+	<p class="muted">
+		Prefer a dedicated publish-only token for humans and CI.
+	</p>
+	<h2>Login + publish</h2>
+	<p class="muted">
+		Ensure your <code class="code-inline">x07-package.json</code> contains a <code class="code-inline">description</code>
+		(that’s what shows up on the package listing), bump the <code class="code-inline">version</code>, then publish the
+		package directory.
 	</p>
 	{#if error}
 		<ErrorBox {error} />
