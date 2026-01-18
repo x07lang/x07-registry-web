@@ -100,20 +100,20 @@
 
 	let installSnippet = $derived.by(() => {
 		if (!latest) return '';
-		return `x07 pkg add ${name}@${latest}\\nx07 pkg lock\\n`;
+		return `x07 pkg add ${name}@${latest}\nx07 pkg lock\n`;
 	});
 
 	let importSnippet = $derived.by(() => {
 		const modules = latestMeta?.package.modules ?? [];
 		if (modules.length === 0) return '';
-		return `# Module IDs (import these from your program)\\n${modules.map((m) => `- ${m}`).join('\\n')}\\n`;
+		return `# Module IDs (import these from your program)\n${modules.map((m) => `- ${m}`).join('\n')}\n`;
 	});
 
 	let verifySnippet = $derived.by(() => {
 		if (!latest || !latestDownload) return '';
 		const expected = (entries ?? []).find((e) => e.version === latest)?.cksum ?? '<unknown>';
 		const filename = `${name}-${latest}.tar`;
-		return `# Download and verify\\n\\ncurl -fsSL ${latestDownload} -o ${filename}\\nshasum -a 256 ${filename}\\n# expected: ${expected}\\n`;
+		return `# Download and verify\n\ncurl -fsSL ${latestDownload} -o ${filename}\nshasum -a 256 ${filename}\n# expected: ${expected}\n`;
 	});
 </script>
 

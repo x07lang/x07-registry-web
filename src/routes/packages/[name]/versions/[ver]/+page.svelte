@@ -90,13 +90,13 @@
 
 	let installSnippet = $derived.by(() => {
 		if (!entry) return '';
-		return `x07 pkg add ${name}@${ver}\\nx07 pkg lock\\n`;
+		return `x07 pkg add ${name}@${ver}\nx07 pkg lock\n`;
 	});
 
 	let verifySnippet = $derived.by(() => {
 		if (!entry || !downloadUrl) return '';
 		const filename = `${name}-${ver}.tar`;
-		return `# Download and verify\\n\\ncurl -fsSL ${downloadUrl} -o ${filename}\\nshasum -a 256 ${filename}\\n# expected: ${entry.cksum}\\n`;
+		return `# Download and verify\n\ncurl -fsSL ${downloadUrl} -o ${filename}\nshasum -a 256 ${filename}\n# expected: ${entry.cksum}\n`;
 	});
 
 	function moduleArchivePath(moduleId: string, moduleRoot: string): string {

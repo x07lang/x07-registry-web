@@ -52,7 +52,7 @@
 
 	let quickStart = $derived.by(() => {
 		const base = indexBase ?? '<index_base>';
-		return `# Use the public sparse index\\n\\nx07 pkg lock --index sparse+${base}\\n`;
+		return `# Use the public sparse index\n\nx07 pkg lock --index sparse+${base}\n`;
 	});
 
 	let indexConfigCurl = $derived.by(() => {

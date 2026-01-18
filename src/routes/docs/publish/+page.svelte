@@ -20,7 +20,7 @@
 
 	let snippet = $derived.by(() => {
 		const base = indexBase ?? '<index_base>';
-		return `# Login (store token locally)\\n\\nx07 pkg login --index sparse+${base} --token <TOKEN>\\n\\n# Publish a package directory\\n\\nx07 pkg publish --index sparse+${base} --package <DIR>\\n`;
+		return `# Login (store token locally)\n\nx07 pkg login --index sparse+${base} --token <TOKEN>\n\n# Publish a package directory\n\nx07 pkg publish --index sparse+${base} --package <DIR>\n`;
 	});
 </script>
 
