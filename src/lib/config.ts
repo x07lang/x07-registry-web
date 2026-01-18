@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/public';
 
 function normalizeBaseUrl(url: string): string {
 	let trimmed = url.trim();
-	if (!trimmed) trimmed = 'https://index.x07.io/';
+	if (!trimmed) trimmed = 'https://registry.x07.io/index/';
 	if (!trimmed.endsWith('/')) trimmed = `${trimmed}/`;
 	return trimmed;
 }

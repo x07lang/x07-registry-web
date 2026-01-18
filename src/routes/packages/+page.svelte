@@ -2,18 +2,24 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import { getCatalog } from '$lib/api/registry';
-	import type { Catalog, CatalogPackage } from '$lib/api/types';
+	import { getCatalog, getIndexConfig } from '$lib/api/registry';
+	import type { ApiError, Catalog, CatalogPackage, IndexConfig } from '$lib/api/types';
+	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
+	import { errorToApiError } from '$lib/ui/error';
+	import { isOfficialPackage } from '$lib/ui/official';
 
 	let q = $state('');
 	let catalog = $state<Catalog | null>(null);
-	let error = $state<string | null>(null);
+	let indexConfig = $state<IndexConfig | null>(null);
+	let error = $state<ApiError | null>(null);
 
 	onMount(async () => {
 		try {
-			catalog = await getCatalog();
+			const [c, cfg] = await Promise.all([getCatalog(), getIndexConfig()]);
+			catalog = c;
+			indexConfig = cfg;
 		} catch (err) {
-			error = err instanceof Error ? err.message : String(err);
+			error = errorToApiError(err);
 		}
 	});
 
@@ -42,7 +48,9 @@
 </form>
 
 {#if error}
-	<p class="muted">catalog unavailable: {error}</p>
+	<div class="card" style="margin-top: 1rem;">
+		<ErrorBox title="Catalog unavailable" {error} />
+	</div>
 {:else if !catalog}
 	<p class="muted">Loading…</p>
 {:else}
@@ -58,7 +66,12 @@
 			<tbody>
 				{#each results as pkg}
 					<tr>
-						<td><a href={`/packages/${pkg.name}`}>{pkg.name}</a></td>
+						<td>
+							<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
+							{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
+								<span class="badge" style="margin-left: 0.5rem;">official</span>
+							{/if}
+						</td>
 						<td class="muted">{pkg.latest ? `v${pkg.latest}` : ''}</td>
 					</tr>
 				{/each}

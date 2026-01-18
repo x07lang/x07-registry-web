@@ -1,5 +1,6 @@
-import { CATALOG_PATH, INDEX_BASE } from '$lib/config';
 import { compare as semverCompare, valid as semverValid } from 'semver';
+
+import { getRegistryWebConfig } from '$lib/config_runtime';
 
 import { ApiClientError, fetchJson, fetchText } from './client';
 import {
@@ -30,19 +31,27 @@ import type {
 } from './types';
 
 let indexConfigPromise: Promise<IndexConfig> | null = null;
+const indexEntriesPromiseByName = new Map<string, Promise<IndexEntry[]>>();
+const ownersPromiseByName = new Map<string, Promise<OwnersResponse>>();
+const packageMetadataPromiseByKey = new Map<string, Promise<PackageMetadataResponse>>();
 
-export function indexUrl(path: string): string {
-	return new URL(path.replace(/^\/+/, ''), INDEX_BASE).toString();
+async function indexUrl(path: string): Promise<string> {
+	const cfg = await getRegistryWebConfig();
+	return new URL(path.replace(/^\/+/, ''), cfg.index_base).toString();
 }
 
 export async function getIndexConfig(): Promise<IndexConfig> {
 	if (indexConfigPromise) return indexConfigPromise;
-	indexConfigPromise = fetchJson(indexUrl('config.json'), decodeIndexConfig);
+	indexConfigPromise = (async () => {
+		const cfg = await getRegistryWebConfig();
+		return fetchJson(new URL('config.json', cfg.index_base).toString(), decodeIndexConfig);
+	})();
 	return indexConfigPromise;
 }
 
 export async function getCatalog(): Promise<Catalog> {
-	return fetchJson(indexUrl(CATALOG_PATH), decodeCatalog);
+	const cfg = await getRegistryWebConfig();
+	return fetchJson(new URL(cfg.catalog_path, cfg.index_base).toString(), decodeCatalog);
 }
 
 export function validatePackageName(name: string): void {
@@ -62,33 +71,46 @@ export function indexRelativePath(name: string): string {
 }
 
 export async function getIndexEntries(name: string): Promise<IndexEntry[]> {
-	const url = indexUrl(indexRelativePath(name));
-	const text = await fetchText(url);
-	const out: IndexEntry[] = [];
-	for (const [idx, line] of text.split('\n').entries()) {
-		const trimmed = line.trim();
-		if (!trimmed) continue;
-		let raw: unknown;
-		try {
-			raw = JSON.parse(trimmed);
-		} catch (err) {
-			throw new ApiClientError({
-				code: 'X07WEB_BAD_INDEX',
-				message: `invalid ndjson line ${idx + 1}`,
-				url
-			});
+	const existing = indexEntriesPromiseByName.get(name);
+	if (existing) return existing;
+
+	const p = (async () => {
+		const url = await indexUrl(indexRelativePath(name));
+		const text = await fetchText(url);
+		const out: IndexEntry[] = [];
+		for (const [idx, line] of text.split('\n').entries()) {
+			const trimmed = line.trim();
+			if (!trimmed) continue;
+			let raw: unknown;
+			try {
+				raw = JSON.parse(trimmed);
+			} catch (err) {
+				throw new ApiClientError({
+					code: 'X07WEB_BAD_INDEX',
+					message: `invalid ndjson line ${idx + 1}`,
+					url
+				});
+			}
+			try {
+				out.push(decodeIndexEntry(raw));
+			} catch (err) {
+				throw new ApiClientError({
+					code: 'X07WEB_BAD_INDEX',
+					message: err instanceof Error ? `invalid index entry line ${idx + 1}: ${err.message}` : `invalid index entry line ${idx + 1}`,
+					url
+				});
+			}
 		}
-		try {
-			out.push(decodeIndexEntry(raw));
-		} catch (err) {
-			throw new ApiClientError({
-				code: 'X07WEB_BAD_INDEX',
-				message: err instanceof Error ? `invalid index entry line ${idx + 1}: ${err.message}` : `invalid index entry line ${idx + 1}`,
-				url
-			});
-		}
+		return out;
+	})();
+
+	indexEntriesPromiseByName.set(name, p);
+	try {
+		return await p;
+	} catch (err) {
+		indexEntriesPromiseByName.delete(name);
+		throw err;
 	}
-	return out;
 }
 
 export function latestNonYankedVersion(entries: IndexEntry[]): string | null {
@@ -105,9 +127,23 @@ export async function getPackageMetadata(
 	name: string,
 	version: string
 ): Promise<PackageMetadataResponse> {
-	const cfg = await getIndexConfig();
-	const url = new URL(`packages/${name}/${version}/metadata`, cfg.api).toString();
-	return fetchJson(url, decodePackageMetadataResponse);
+	const key = `${name}@${version}`;
+	const existing = packageMetadataPromiseByKey.get(key);
+	if (existing) return existing;
+
+	const p = (async () => {
+		const cfg = await getIndexConfig();
+		const url = new URL(`packages/${name}/${version}/metadata`, cfg.api).toString();
+		return fetchJson(url, decodePackageMetadataResponse);
+	})();
+
+	packageMetadataPromiseByKey.set(key, p);
+	try {
+		return await p;
+	} catch (err) {
+		packageMetadataPromiseByKey.delete(key);
+		throw err;
+	}
 }
 
 export async function getDownloadUrl(name: string, version: string): Promise<string> {
@@ -125,9 +161,22 @@ export async function searchPackages(q: string, limit = 20, offset = 0): Promise
 }
 
 export async function getOwners(name: string): Promise<OwnersResponse> {
-	const cfg = await getIndexConfig();
-	const url = new URL(`packages/${name}/owners`, cfg.api).toString();
-	return fetchJson(url, decodeOwnersResponse);
+	const existing = ownersPromiseByName.get(name);
+	if (existing) return existing;
+
+	const p = (async () => {
+		const cfg = await getIndexConfig();
+		const url = new URL(`packages/${name}/owners`, cfg.api).toString();
+		return fetchJson(url, decodeOwnersResponse);
+	})();
+
+	ownersPromiseByName.set(name, p);
+	try {
+		return await p;
+	} catch (err) {
+		ownersPromiseByName.delete(name);
+		throw err;
+	}
 }
 
 export async function getAccount(token: string): Promise<AccountResponse> {

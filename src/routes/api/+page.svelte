@@ -2,17 +2,24 @@
 	import { onMount } from 'svelte';
 
 	import { fetchText } from '$lib/api/client';
+	import type { ApiError } from '$lib/api/types';
+	import { getRegistryWebConfig } from '$lib/config_runtime';
+	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
+	import { errorToApiError } from '$lib/ui/error';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
 
+	let openapiUrl = $state<string | null>(null);
 	let openapiText = $state<string | null>(null);
-	let error = $state<string | null>(null);
+	let error = $state<ApiError | null>(null);
 
 	onMount(async () => {
 		error = null;
 		try {
-			openapiText = await fetchText('/openapi/openapi.json', 5000);
+			const cfg = await getRegistryWebConfig();
+			openapiUrl = cfg.openapi_url;
+			openapiText = await fetchText(cfg.openapi_url, 5000);
 		} catch (err) {
-			error = err instanceof Error ? err.message : String(err);
+			error = errorToApiError(err);
 		}
 	});
 </script>
@@ -22,12 +29,18 @@
 <div class="card" style="margin-top: 1rem;">
 	<p class="muted">
 		This page serves a pinned copy of the registry OpenAPI contract at
-		<a href="/openapi/openapi.json">/openapi/openapi.json</a>.
+		{#if openapiUrl}
+			<a href={openapiUrl}>{openapiUrl}</a>.
+		{:else}
+			<code class="code-inline">/openapi/openapi.json</code>.
+		{/if}
 	</p>
 </div>
 
 {#if error}
-	<p class="muted">openapi unavailable: {error}</p>
+	<div class="card" style="margin-top: 1rem;">
+		<ErrorBox title="OpenAPI unavailable" {error} />
+	</div>
 {:else if !openapiText}
 	<p class="muted">Loading…</p>
 {:else}
@@ -36,3 +49,8 @@
 	</section>
 {/if}
 
+<style>
+	.code-inline {
+		font-family: var(--mono);
+	}
+</style>

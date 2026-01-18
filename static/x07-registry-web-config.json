@@ -1,0 +1,6 @@
+{
+  "schema": "x07.registry_web_config@v1",
+  "index_base": "https://registry.x07.io/index/",
+  "catalog_path": "catalog.json",
+  "openapi_url": "/openapi/openapi.json"
+}

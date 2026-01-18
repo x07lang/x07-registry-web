@@ -2,20 +2,45 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import { getCatalog } from '$lib/api/registry';
-	import type { Catalog } from '$lib/api/types';
-	import { INDEX_BASE } from '$lib/config';
+	import { getCatalog, getIndexConfig } from '$lib/api/registry';
+	import type { ApiError, Catalog, IndexConfig } from '$lib/api/types';
+	import { getRegistryWebConfig } from '$lib/config_runtime';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
+	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
+	import { errorToApiError } from '$lib/ui/error';
+	import { isOfficialPackage } from '$lib/ui/official';
 
 	let q = $state('');
+	let indexBase = $state<string | null>(null);
+	let indexConfig = $state<IndexConfig | null>(null);
 	let catalog = $state<Catalog | null>(null);
-	let catalogError = $state<string | null>(null);
+	let catalogError = $state<ApiError | null>(null);
+	let indexConfigError = $state<ApiError | null>(null);
 
 	onMount(async () => {
-		try {
-			catalog = await getCatalog();
-		} catch (err) {
-			catalogError = err instanceof Error ? err.message : String(err);
+		catalog = null;
+		indexConfig = null;
+		catalogError = null;
+		indexConfigError = null;
+
+		const cfg = await getRegistryWebConfig();
+		indexBase = cfg.index_base;
+
+		const [catalogResult, indexCfgResult] = await Promise.allSettled([
+			getCatalog(),
+			getIndexConfig()
+		]);
+
+		if (catalogResult.status === 'fulfilled') {
+			catalog = catalogResult.value;
+		} else {
+			catalogError = errorToApiError(catalogResult.reason);
+		}
+
+		if (indexCfgResult.status === 'fulfilled') {
+			indexConfig = indexCfgResult.value;
+		} else {
+			indexConfigError = errorToApiError(indexCfgResult.reason);
 		}
 	});
 
@@ -25,11 +50,20 @@
 		void goto(query ? `/search?q=${encodeURIComponent(query)}` : '/search');
 	}
 
-	const quickStart = `# Use the public sparse index\\n\\nx07 pkg lock --index sparse+${INDEX_BASE}\\n`;
+	let quickStart = $derived.by(() => {
+		const base = indexBase ?? '<index_base>';
+		return `# Use the public sparse index\\n\\nx07 pkg lock --index sparse+${base}\\n`;
+	});
+
+	let indexConfigCurl = $derived.by(() => {
+		const base = indexBase ?? '<index_base>/';
+		const normalized = base.endsWith('/') ? base : `${base}/`;
+		return `curl -fsSL ${normalized}config.json`;
+	});
 </script>
 
 <div class="hero">
-	<div class="hero__left">
+	<section class="card hero__left">
 		<h1>X07 package registry</h1>
 		<p class="muted">Search and fetch source-only X07 packages.</p>
 
@@ -41,13 +75,13 @@
 				<a class="btn" href="/docs/publish">Publish</a>
 			</div>
 		</form>
-	</div>
+	</section>
 
-	<div class="hero__right card">
+	<section class="card hero__right">
 		<h2>Quick start</h2>
-		<p class="muted">Index base: <code class="code-inline">{INDEX_BASE}</code></p>
+		<p class="muted">Index base: <code class="code-inline">{indexBase ?? '—'}</code></p>
 		<CopyCode label="Copy CLI snippet" code={quickStart} />
-	</div>
+	</section>
 </div>
 
 <div class="grid">
@@ -60,14 +94,25 @@
 						<ul class="list">
 					{#each catalog.packages.slice(0, 12) as pkg}
 						<li>
-							<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
+							<div>
+								<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
+								{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
+									<span class="badge" style="margin-left: 0.5rem;">official</span>
+								{/if}
+							</div>
 							{#if pkg.latest}<span class="muted">v{pkg.latest}</span>{/if}
 						</li>
 					{/each}
 				</ul>
 			{/if}
 		{:else if catalogError}
-			<p class="muted">catalog unavailable: {catalogError}</p>
+			<p class="muted">Catalog unavailable.</p>
+			<details class="details">
+				<summary class="muted">Show error details</summary>
+				<div class="details__body">
+					<ErrorBox title="Catalog error" error={catalogError} />
+				</div>
+			</details>
 		{:else}
 			<p class="muted">Loading…</p>
 		{/if}
@@ -76,7 +121,15 @@
 	<section class="card">
 		<h2>Agent panel</h2>
 		<p class="muted">These endpoints are deterministic and copy/paste friendly.</p>
-		<CopyCode label="Copy request" code={`curl -fsSL ${INDEX_BASE}config.json`} />
+		<CopyCode label="Copy request" code={indexConfigCurl} />
+		{#if indexConfigError}
+			<details class="details" style="margin-top: 0.75rem;">
+				<summary class="muted">Index config unavailable</summary>
+				<div class="details__body">
+					<ErrorBox title="Index config error" error={indexConfigError} />
+				</div>
+			</details>
+		{/if}
 	</section>
 </div>
 
@@ -128,6 +181,18 @@
 		display: flex;
 		justify-content: space-between;
 		gap: 0.75rem;
+	}
+
+	.details {
+		margin-top: 0.75rem;
+	}
+
+	.details summary {
+		cursor: pointer;
+	}
+
+	.details__body {
+		margin-top: 0.75rem;
 	}
 
 	@media (max-width: 860px) {

@@ -1,5 +1,6 @@
-import { DEFAULT_TIMEOUT_MS } from '$lib/config';
 import type { ApiError } from './types';
+
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 export class ApiClientError extends Error {
 	public readonly apiError: ApiError;
@@ -21,6 +22,10 @@ function normalizeError(err: unknown, url: string): ApiError {
 	return { code: 'X07WEB_UNKNOWN', message: String(err), url };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 export async function fetchText(
 	url: string,
 	timeoutMs = DEFAULT_TIMEOUT_MS,
@@ -30,7 +35,28 @@ export async function fetchText(
 	const t = setTimeout(() => controller.abort(), timeoutMs);
 	try {
 		const resp = await fetch(url, { ...init, signal: controller.signal });
+		const text = await resp.text();
 		if (!resp.ok) {
+			let parsed: unknown = undefined;
+			try {
+				parsed = JSON.parse(text);
+			} catch {
+				parsed = undefined;
+			}
+			if (
+				isRecord(parsed) &&
+				typeof parsed.code === 'string' &&
+				typeof parsed.message === 'string'
+			) {
+				throw new ApiClientError({
+					code: parsed.code,
+					message: parsed.message,
+					url,
+					httpStatus: resp.status,
+					request_id: typeof parsed.request_id === 'string' ? parsed.request_id : undefined
+				});
+			}
+
 			throw new ApiClientError({
 				code: 'X07WEB_HTTP',
 				message: `HTTP ${resp.status}`,
@@ -38,8 +64,9 @@ export async function fetchText(
 				httpStatus: resp.status
 			});
 		}
-		return await resp.text();
+		return text;
 	} catch (err) {
+		if (err instanceof ApiClientError) throw err;
 		throw new ApiClientError(normalizeError(err, url));
 	} finally {
 		clearTimeout(t);

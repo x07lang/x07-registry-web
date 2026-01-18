@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "x07-registry-web runtime config (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "index_base", "catalog_path", "openapi_url"],
+  "properties": {
+    "schema": { "const": "x07.registry_web_config@v1" },
+    "index_base": { "type": "string", "minLength": 1 },
+    "catalog_path": { "type": "string", "minLength": 1 },
+    "openapi_url": { "type": "string", "minLength": 1 }
+  }
+}

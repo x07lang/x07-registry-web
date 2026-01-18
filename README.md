@@ -4,12 +4,26 @@ Registry UI for `x07.io`.
 
 This is a static SPA built with SvelteKit (`@sveltejs/adapter-static` with `fallback: index.html`).
 
-## Config
+## Runtime config
 
-Build-time environment variables (Vite/SvelteKit public env):
+The built site loads a runtime config JSON file at:
 
-- `PUBLIC_X07_INDEX_BASE` (example: `https://registry.x07.io/index/`)
-- `PUBLIC_X07_CATALOG_PATH` (default: `catalog.json`)
+- `/x07-registry-web-config.json` (served from `static/x07-registry-web-config.json`)
+
+Example:
+
+```json
+{
+  "schema": "x07.registry_web_config@v1",
+  "index_base": "https://registry.x07.io/index/",
+  "catalog_path": "catalog.json",
+  "openapi_url": "/openapi/openapi.json"
+}
+```
+
+Schema reference: `schemas/x07-registry-web-config.v1.schema.json`.
+
+If the runtime config is missing or invalid, the UI shows a “Registry misconfigured” page with the failing URL and details.
 
 ## Development
 

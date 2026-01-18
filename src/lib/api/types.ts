@@ -3,6 +3,7 @@ export type ApiError = {
 	message: string;
 	url?: string;
 	httpStatus?: number;
+	request_id?: string;
 };
 
 export type IndexConfig = {
@@ -10,6 +11,7 @@ export type IndexConfig = {
 	api: string;
 	auth_required: boolean;
 	sparse: true;
+	verified_namespaces?: string[];
 };
 
 export type IndexEntry = {
@@ -23,6 +25,7 @@ export type IndexEntry = {
 export type PackageManifest = {
 	schema_version: string;
 	name: string;
+	description?: string;
 	version: string;
 	module_root: string;
 	modules: string[];

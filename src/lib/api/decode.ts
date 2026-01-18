@@ -40,6 +40,11 @@ function expectStringArray(value: unknown, field: string): string[] {
 	return value;
 }
 
+function expectOptionalStringArray(value: unknown, field: string): string[] | undefined {
+	if (value === undefined || value === null) return undefined;
+	return expectStringArray(value, field);
+}
+
 function expectOptionalString(value: unknown, field: string): string | undefined {
 	if (value === undefined || value === null) return undefined;
 	return expectString(value, field);
@@ -51,7 +56,10 @@ export function decodeIndexConfig(raw: unknown): IndexConfig {
 	const api = expectString(raw.api, 'api');
 	const authRequired = expectBool(raw['auth-required'], 'auth-required');
 	if (raw.sparse !== true) throw new Error('sparse must be true');
-	return { dl, api, auth_required: authRequired, sparse: true };
+	const verified_namespaces = expectOptionalStringArray(raw['verified-namespaces'], 'verified-namespaces');
+	return verified_namespaces
+		? { dl, api, auth_required: authRequired, sparse: true, verified_namespaces }
+		: { dl, api, auth_required: authRequired, sparse: true };
 }
 
 export function decodeIndexEntry(raw: unknown): IndexEntry {
@@ -69,10 +77,13 @@ export function decodePackageManifest(raw: unknown): PackageManifest {
 	if (!isRecord(raw)) throw new Error('package manifest must be an object');
 	const schema_version = expectString(raw.schema_version, 'schema_version');
 	const name = expectString(raw.name, 'name');
+	const description = expectOptionalString(raw.description, 'description');
 	const version = expectString(raw.version, 'version');
 	const module_root = expectString(raw.module_root, 'module_root');
 	const modules = expectStringArray(raw.modules, 'modules');
-	return { schema_version, name, version, module_root, modules };
+	return description
+		? { schema_version, name, description, version, module_root, modules }
+		: { schema_version, name, version, module_root, modules };
 }
 
 export function decodePackageMetadataResponse(raw: unknown): PackageMetadataResponse {

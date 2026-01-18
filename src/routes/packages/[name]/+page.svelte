@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { compare as semverCompare, valid as semverValid } from 'semver';
 
-	import { ApiClientError } from '$lib/api/client';
 	import {
+		getIndexConfig,
 		getOwners,
 		getDownloadUrl,
 		getIndexEntries,
@@ -10,22 +11,27 @@
 		latestNonYankedVersion,
 		validatePackageName
 	} from '$lib/api/registry';
-	import type { IndexEntry, OwnersResponse, PackageMetadataResponse } from '$lib/api/types';
+	import type { ApiError, IndexConfig, IndexEntry, OwnersResponse, PackageMetadataResponse } from '$lib/api/types';
+	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
+	import { errorToApiError } from '$lib/ui/error';
+	import { isOfficialPackage } from '$lib/ui/official';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
 	import CopyJson from '$lib/ui/components/CopyJson.svelte';
 
 	let name = $derived(page.params.name ?? '');
 
+	let indexConfig = $state<IndexConfig | null>(null);
 	let entries = $state<IndexEntry[] | null>(null);
 	let latest = $state<string | null>(null);
 	let latestMeta = $state<PackageMetadataResponse | null>(null);
 	let latestDownload = $state<string | null>(null);
 	let owners = $state<OwnersResponse | null>(null);
-	let error = $state<string | null>(null);
+	let error = $state<ApiError | null>(null);
 
 	$effect(() => {
 		const pkgName = name;
 
+		indexConfig = null;
 		entries = null;
 		latest = null;
 		latestMeta = null;
@@ -34,7 +40,7 @@
 		error = null;
 
 		if (!pkgName) {
-			error = 'missing package name';
+			error = { code: 'X07WEB_INPUT', message: 'missing package name' };
 			return;
 		}
 
@@ -42,8 +48,13 @@
 		(async () => {
 			try {
 				validatePackageName(pkgName);
-				const [gotEntries, gotOwners] = await Promise.all([getIndexEntries(pkgName), getOwners(pkgName)]);
+				const [cfg, gotEntries, gotOwners] = await Promise.all([
+					getIndexConfig(),
+					getIndexEntries(pkgName),
+					getOwners(pkgName)
+				]);
 				if (cancelled) return;
+				indexConfig = cfg;
 				entries = gotEntries;
 				owners = gotOwners;
 				const latestVer = latestNonYankedVersion(gotEntries);
@@ -59,8 +70,7 @@
 				}
 			} catch (err) {
 				if (cancelled) return;
-				if (err instanceof ApiClientError) error = `${err.apiError.code}: ${err.apiError.message}`;
-				else error = err instanceof Error ? err.message : String(err);
+				error = errorToApiError(err);
 			}
 		})();
 
@@ -69,11 +79,41 @@
 		};
 	});
 
+	let sortedEntries = $derived.by(() => {
+		if (!entries) return [] as IndexEntry[];
+		return [...entries].sort((a, b) => {
+			const av = semverValid(a.version);
+			const bv = semverValid(b.version);
+			if (av && bv) {
+				const c = semverCompare(b.version, a.version);
+				if (c !== 0) return c;
+			} else if (av && !bv) {
+				return -1;
+			} else if (!av && bv) {
+				return 1;
+			}
+			if (a.version < b.version) return 1;
+			if (a.version > b.version) return -1;
+			return 0;
+		});
+	});
+
 	let installSnippet = $derived.by(() => {
+		if (!latest) return '';
+		return `x07 pkg add ${name}@${latest}\\nx07 pkg lock\\n`;
+	});
+
+	let importSnippet = $derived.by(() => {
+		const modules = latestMeta?.package.modules ?? [];
+		if (modules.length === 0) return '';
+		return `# Module IDs (import these from your program)\\n${modules.map((m) => `- ${m}`).join('\\n')}\\n`;
+	});
+
+	let verifySnippet = $derived.by(() => {
 		if (!latest || !latestDownload) return '';
-		const expected =
-			(entries ?? []).find((e) => e.version === latest)?.cksum ?? '<unknown>';
-		return `# Download and verify\\n\\ncurl -fsSL ${latestDownload} -o ${name}-${latest}.tar\\n# Expected sha256: ${expected}\\n`;
+		const expected = (entries ?? []).find((e) => e.version === latest)?.cksum ?? '<unknown>';
+		const filename = `${name}-${latest}.tar`;
+		return `# Download and verify\\n\\ncurl -fsSL ${latestDownload} -o ${filename}\\nshasum -a 256 ${filename}\\n# expected: ${expected}\\n`;
 	});
 </script>
 
@@ -81,7 +121,7 @@
 
 {#if error}
 	<div class="card">
-		<p class="muted">{error}</p>
+		<ErrorBox {error} />
 	</div>
 {:else if !entries}
 	<p class="muted">Loading…</p>
@@ -89,6 +129,11 @@
 	<div class="grid">
 		<section class="card">
 			<h2>Overview</h2>
+			{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
+				<p class="muted">
+					<span class="badge">official</span>
+				</p>
+			{/if}
 			<p class="muted">Latest: {latest ?? 'none'}</p>
 			{#if owners}
 				<p class="muted">
@@ -96,6 +141,9 @@
 				</p>
 			{/if}
 			{#if latestMeta}
+				{#if latestMeta.package.description}
+					<p class="muted">{latestMeta.package.description}</p>
+				{/if}
 				<p class="muted">
 					Manifest schema: <code class="code-inline">{latestMeta.package.schema_version}</code>
 				</p>
@@ -112,10 +160,10 @@
 		</section>
 
 		<section class="card">
-			<h2>Agent panel</h2>
-			{#if installSnippet}
-				<CopyCode label="Copy install snippet" code={installSnippet} />
-			{/if}
+			<h2>Quickstart</h2>
+			{#if installSnippet}<CopyCode label="Copy install commands" code={installSnippet} />{/if}
+			{#if importSnippet}<CopyCode label="Copy module IDs" code={importSnippet} />{/if}
+			{#if verifySnippet}<CopyCode label="Copy verify snippet" code={verifySnippet} />{/if}
 			{#if latestMeta}
 				<CopyJson label="Copy latest metadata JSON" value={latestMeta} />
 			{/if}
@@ -133,7 +181,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each [...entries].reverse() as e}
+				{#each sortedEntries as e}
 					<tr>
 						<td>
 							<a href={`/packages/${name}/versions/${e.version}`}>{e.version}</a>

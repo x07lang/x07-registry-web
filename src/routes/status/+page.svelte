@@ -3,10 +3,13 @@
 
 	import { fetchText } from '$lib/api/client';
 	import { getIndexConfig } from '$lib/api/registry';
+	import type { ApiError } from '$lib/api/types';
+	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
+	import { errorToApiError } from '$lib/ui/error';
 
 	let indexOk = $state<boolean | null>(null);
 	let registryOk = $state<boolean | null>(null);
-	let error = $state<string | null>(null);
+	let error = $state<ApiError | null>(null);
 
 	onMount(async () => {
 		error = null;
@@ -17,7 +20,7 @@
 			const body = await fetchText(healthzUrl, 5000);
 			registryOk = body.trim() === 'ok';
 		} catch (err) {
-			error = err instanceof Error ? err.message : String(err);
+			error = errorToApiError(err);
 			if (indexOk === null) indexOk = false;
 			if (registryOk === null) registryOk = false;
 		}
@@ -28,7 +31,7 @@
 
 <div class="card" style="margin-top: 1rem;">
 	{#if error}
-		<p class="muted">{error}</p>
+		<ErrorBox {error} />
 	{/if}
 
 	<table>
@@ -60,4 +63,3 @@
 		</tbody>
 	</table>
 </div>
-

@@ -1,22 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { ApiClientError } from '$lib/api/client';
 	import { clearAuthToken, loadAuthToken, storeAuthToken } from '$lib/auth';
 	import { createToken, getAccount, listTokens, revokeToken } from '$lib/api/registry';
-	import type { AccountResponse, TokenCreateResponse, TokenInfo } from '$lib/api/types';
+	import type { AccountResponse, ApiError, TokenCreateResponse, TokenInfo } from '$lib/api/types';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
+	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
+	import { errorToApiError } from '$lib/ui/error';
 
 	let tokenInput = $state('');
 	let token = $state<string | null>(null);
 
 	let account = $state<AccountResponse | null>(null);
 	let tokens = $state<TokenInfo[] | null>(null);
-	let error = $state<string | null>(null);
+	let error = $state<ApiError | null>(null);
 
 	let createLabel = $state('');
 	let createScopes = $state<string[]>([]);
-	let createError = $state<string | null>(null);
+	let createError = $state<ApiError | null>(null);
 	let created = $state<TokenCreateResponse | null>(null);
 	let busy = $state(false);
 
@@ -45,8 +46,7 @@
 				createScopes = acct.scopes.includes('publish') ? ['publish'] : [];
 			} catch (err) {
 				if (cancelled) return;
-				if (err instanceof ApiClientError) error = `${err.apiError.code}: ${err.apiError.message}`;
-				else error = err instanceof Error ? err.message : String(err);
+				error = errorToApiError(err);
 			}
 		})();
 
@@ -95,8 +95,7 @@
 			const list = await listTokens(token);
 			tokens = list.tokens;
 		} catch (err) {
-			if (err instanceof ApiClientError) createError = `${err.apiError.code}: ${err.apiError.message}`;
-			else createError = err instanceof Error ? err.message : String(err);
+			createError = errorToApiError(err);
 		} finally {
 			busy = false;
 		}
@@ -111,8 +110,7 @@
 			const list = await listTokens(token);
 			tokens = list.tokens;
 		} catch (err) {
-			if (err instanceof ApiClientError) createError = `${err.apiError.code}: ${err.apiError.message}`;
-			else createError = err instanceof Error ? err.message : String(err);
+			createError = errorToApiError(err);
 		} finally {
 			busy = false;
 		}
@@ -129,7 +127,9 @@
 		<button class="btn" type="button" onclick={signOut}>Clear</button>
 	</div>
 	{#if error}
-		<p class="muted" style="margin-top: 0.75rem;">{error}</p>
+		<div style="margin-top: 0.75rem;">
+			<ErrorBox {error} />
+		</div>
 	{/if}
 </section>
 
@@ -174,7 +174,9 @@
 		</form>
 
 		{#if createError}
-			<p class="muted" style="margin-top: 0.75rem;">{createError}</p>
+			<div style="margin-top: 0.75rem;">
+				<ErrorBox title="Token action failed" error={createError} />
+			</div>
 		{/if}
 
 		{#if created}
@@ -245,4 +247,3 @@
 		}
 	}
 </style>
-
