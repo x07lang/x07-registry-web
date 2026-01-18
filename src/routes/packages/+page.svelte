@@ -1,26 +1,41 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import { getCatalog, getIndexConfig } from '$lib/api/registry';
-	import type { ApiError, Catalog, CatalogPackage, IndexConfig } from '$lib/api/types';
+	import { getIndexConfig, searchPackages } from '$lib/api/registry';
+	import type { ApiError, IndexConfig, SearchHit, SearchResponse } from '$lib/api/types';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
 	import { isOfficialPackage } from '$lib/ui/official';
 
+	const PER_PAGE = 25;
+
 	let q = $state('');
-	let catalog = $state<Catalog | null>(null);
+	let currentPage = $state(1);
+	let searchResult = $state<SearchResponse | null>(null);
 	let indexConfig = $state<IndexConfig | null>(null);
 	let error = $state<ApiError | null>(null);
+	let loading = $state(true);
 
-	onMount(async () => {
+	async function fetchPage(query: string, page: number) {
+		loading = true;
+		error = null;
 		try {
-			const [c, cfg] = await Promise.all([getCatalog(), getIndexConfig()]);
-			catalog = c;
+			const offset = (page - 1) * PER_PAGE;
+			const [result, cfg] = await Promise.all([
+				searchPackages(query, PER_PAGE, offset),
+				indexConfig ? Promise.resolve(indexConfig) : getIndexConfig()
+			]);
+			searchResult = result;
 			indexConfig = cfg;
 		} catch (err) {
 			error = errorToApiError(err);
+		} finally {
+			loading = false;
 		}
+	}
+
+	$effect(() => {
+		fetchPage(q.trim(), currentPage);
 	});
 
 	function submit(e: SubmitEvent) {
@@ -29,11 +44,38 @@
 		void goto(query ? `/search?q=${encodeURIComponent(query)}` : '/search');
 	}
 
-	let results = $derived.by(() => {
-		if (!catalog) return [] as CatalogPackage[];
-		if (!q.trim()) return catalog.packages;
-		const needle = q.trim().toLowerCase();
-		return catalog.packages.filter((p) => p.name.includes(needle));
+	let results = $derived<SearchHit[]>(searchResult?.packages ?? []);
+	let total = $derived(searchResult?.total ?? 0);
+	let totalPages = $derived(Math.ceil(total / PER_PAGE));
+
+	function goToPage(page: number) {
+		if (page >= 1 && page <= totalPages && page !== currentPage) {
+			currentPage = page;
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
+	}
+
+	function handleFilterInput() {
+		currentPage = 1;
+	}
+
+	let pageNumbers = $derived.by(() => {
+		const pages: (number | 'ellipsis')[] = [];
+		const totalPg = totalPages;
+		const current = currentPage;
+
+		if (totalPg <= 7) {
+			for (let i = 1; i <= totalPg; i++) pages.push(i);
+		} else {
+			pages.push(1);
+			if (current > 3) pages.push('ellipsis');
+			for (let i = Math.max(2, current - 1); i <= Math.min(totalPg - 1, current + 1); i++) {
+				pages.push(i);
+			}
+			if (current < totalPg - 2) pages.push('ellipsis');
+			pages.push(totalPg);
+		}
+		return pages;
 	});
 </script>
 
@@ -48,7 +90,7 @@
 			<svg class="filter-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
 			</svg>
-			<input id="q" name="q" type="search" placeholder="Filter by name…" bind:value={q} />
+			<input id="q" name="q" type="search" placeholder="Filter by name…" bind:value={q} oninput={handleFilterInput} />
 		</div>
 		<button class="btn btn--ghost" type="submit">Advanced search →</button>
 	</form>
@@ -58,11 +100,14 @@
 	<div class="card" style="margin-top: 1.5rem;">
 		<ErrorBox title="Catalog unavailable" {error} />
 	</div>
-{:else if !catalog}
+{:else if loading && !searchResult}
 	<p class="muted loading">Loading packages…</p>
 {:else}
 	<div class="results-header">
-		<span class="results-count">{results.length} package{results.length === 1 ? '' : 's'}</span>
+		<span class="results-count">{total} package{total === 1 ? '' : 's'}{q.trim() ? ` matching "${q.trim()}"` : ''}</span>
+		{#if loading}
+			<span class="muted">Loading…</span>
+		{/if}
 	</div>
 	<div class="card">
 		<table>
@@ -81,7 +126,7 @@
 								<span class="badge badge--accent">official</span>
 							{/if}
 						</td>
-						<td class="muted">{pkg.latest ? `v${pkg.latest}` : '—'}</td>
+						<td class="muted">{pkg.latest_version ? `v${pkg.latest_version}` : '—'}</td>
 					</tr>
 				{/each}
 				{#if results.length === 0}
@@ -92,6 +137,40 @@
 			</tbody>
 		</table>
 	</div>
+
+	{#if totalPages > 1}
+		<nav class="pagination">
+			<button
+				class="pagination-btn"
+				disabled={currentPage === 1}
+				onclick={() => goToPage(currentPage - 1)}
+			>
+				← Previous
+			</button>
+			<div class="pagination-pages">
+				{#each pageNumbers as p}
+					{#if p === 'ellipsis'}
+						<span class="pagination-ellipsis">…</span>
+					{:else}
+						<button
+							class="pagination-page"
+							class:active={p === currentPage}
+							onclick={() => goToPage(p)}
+						>
+							{p}
+						</button>
+					{/if}
+				{/each}
+			</div>
+			<button
+				class="pagination-btn"
+				disabled={currentPage === totalPages}
+				onclick={() => goToPage(currentPage + 1)}
+			>
+				Next →
+			</button>
+		</nav>
+	{/if}
 {/if}
 
 <style>
@@ -151,10 +230,81 @@
 		padding: 2rem 0;
 	}
 
+	.pagination {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 1.5rem;
+		padding: 1rem 0;
+	}
+
+	.pagination-btn {
+		padding: 0.5rem 1rem;
+		background: var(--panel);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text);
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.pagination-btn:hover:not(:disabled) {
+		background: var(--panel-hover);
+		border-color: var(--border-strong);
+	}
+
+	.pagination-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.pagination-pages {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	.pagination-page {
+		min-width: 2.25rem;
+		height: 2.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: var(--radius-sm);
+		color: var(--muted);
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: all var(--transition-fast);
+	}
+
+	.pagination-page:hover {
+		background: var(--panel);
+		color: var(--text);
+	}
+
+	.pagination-page.active {
+		background: var(--accent);
+		color: var(--bg);
+		font-weight: 600;
+	}
+
+	.pagination-ellipsis {
+		padding: 0 0.5rem;
+		color: var(--muted);
+	}
+
 	@media (max-width: 640px) {
 		.filter-form {
 			flex-direction: column;
 			align-items: stretch;
+		}
+
+		.pagination {
+			flex-wrap: wrap;
 		}
 	}
 </style>
