@@ -109,29 +109,33 @@
 			<span class="muted">Loading…</span>
 		{/if}
 	</div>
-	<div class="card">
-		<table>
+	<div class="card packages-table-card">
+		<table class="packages-table">
 			<thead>
 				<tr>
 					<th>Package</th>
-					<th>Latest version</th>
+					<th>Description</th>
+					<th class="col-version">Version</th>
+					<th class="col-modules">Modules</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each results as pkg}
 					<tr>
-						<td>
+						<td class="col-name">
 							<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
 							{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
 								<span class="badge badge--accent">official</span>
 							{/if}
 						</td>
-						<td class="muted">{pkg.latest_version ? `v${pkg.latest_version}` : '—'}</td>
+						<td class="col-desc muted">{pkg.description || '—'}</td>
+						<td class="col-version">{pkg.latest_version ? `v${pkg.latest_version}` : '—'}</td>
+						<td class="col-modules">{pkg.modules_count ?? '—'}</td>
 					</tr>
 				{/each}
 				{#if results.length === 0}
 					<tr>
-						<td colspan="2" class="muted" style="text-align: center; padding: 2rem;">No packages match your filter</td>
+						<td colspan="4" class="muted" style="text-align: center; padding: 2rem;">No packages match your filter</td>
 					</tr>
 				{/if}
 			</tbody>
@@ -228,6 +232,36 @@
 
 	.loading {
 		padding: 2rem 0;
+	}
+
+	.packages-table-card {
+		overflow-x: auto;
+	}
+
+	.packages-table {
+		min-width: 700px;
+	}
+
+	.packages-table .col-name {
+		white-space: nowrap;
+	}
+
+	.packages-table .col-desc {
+		max-width: 350px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.packages-table .col-version {
+		white-space: nowrap;
+		text-align: center;
+		width: 100px;
+	}
+
+	.packages-table .col-modules {
+		text-align: center;
+		width: 80px;
 	}
 
 	.pagination {

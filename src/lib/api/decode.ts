@@ -124,7 +124,9 @@ export function decodeSearchResponse(raw: unknown): SearchResponse {
 		if (!isRecord(p)) throw new Error('package must be an object');
 		const name = expectString(p.name, 'name');
 		const latest_version = expectOptionalString(p.latest_version, 'latest_version');
-		return latest_version ? { name, latest_version } : { name };
+		const description = expectOptionalString(p.description, 'description');
+		const modules_count = p.modules_count === undefined || p.modules_count === null ? undefined : expectNumber(p.modules_count, 'modules_count');
+		return { name, latest_version, description, modules_count };
 	});
 	return { ok: true, q, limit, offset, total, packages };
 }

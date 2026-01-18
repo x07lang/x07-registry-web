@@ -50,6 +50,8 @@ export type Catalog = {
 export type SearchHit = {
 	name: string;
 	latest_version?: string;
+	description?: string;
+	modules_count?: number;
 };
 
 export type SearchResponse = {
