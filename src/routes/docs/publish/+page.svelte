@@ -40,13 +40,25 @@
 		<code class="code-inline">publish</code> scope. Don’t share tokens between people.
 	</p>
 	<p class="muted">
+		Publishing requires a verified email on your GitHub account.
+	</p>
+	<p class="muted">
 		Prefer a dedicated publish-only token for humans and CI.
+	</p>
+	<p class="muted">
+		<code class="code-inline">x07 pkg login</code> stores credentials in
+		<code class="code-inline">~/.x07/credentials.json</code> (or in
+		<code class="code-inline">X07_PKG_HOME/credentials.json</code>).
 	</p>
 	<h2>Login + publish</h2>
 	<p class="muted">
 		Ensure your <code class="code-inline">x07-package.json</code> contains a <code class="code-inline">description</code>
 		(that’s what shows up on the package listing), bump the <code class="code-inline">version</code>, then publish the
 		package directory.
+	</p>
+	<p class="muted">
+		The first publish of a new package name creates the package and assigns you as the initial owner. To publish a new
+		version of an existing package, your account must be listed as an owner.
 	</p>
 	{#if error}
 		<ErrorBox {error} />

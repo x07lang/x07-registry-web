@@ -15,6 +15,10 @@
 		Publishing requires a bearer token. Packages have owners, and tokens carry scopes (for example
 		<code class="code-inline">publish</code>, <code class="code-inline">owner.manage</code>, <code class="code-inline">token.manage</code>).
 	</p>
+	<p class="muted">
+		Sign in with GitHub at <a href="/settings/tokens">/settings/tokens</a> to create tokens. Publishing requires a
+		verified email on your GitHub account.
+	</p>
 </div>
 
 <style>
