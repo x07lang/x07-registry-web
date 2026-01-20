@@ -133,6 +133,9 @@
 	{#if latestMeta?.package.description}
 		<p class="page-header__desc">{latestMeta.package.description}</p>
 	{/if}
+	{#if latestMeta?.package.docs}
+		<pre class="page-header__docs">{latestMeta.package.docs}</pre>
+	{/if}
 </div>
 
 {#if error}
@@ -268,6 +271,16 @@
 		margin: 0.5rem 0 0;
 		color: var(--muted);
 		font-size: 1.05rem;
+	}
+
+	.page-header__docs {
+		margin: 0.75rem 0 0;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--muted);
+		font-size: 0.9rem;
+		white-space: pre-wrap;
 	}
 
 	.layout {
