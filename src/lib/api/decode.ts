@@ -76,7 +76,11 @@ export function decodeIndexEntry(raw: unknown): IndexEntry {
 	const version = expectString(raw.version, 'version');
 	const cksum = expectString(raw.cksum, 'cksum');
 	const yanked = expectBool(raw.yanked, 'yanked');
-	return { schema_version: 'x07.index-entry@0.1.0', name, version, cksum, yanked };
+	const description = expectOptionalString(raw.description, 'description');
+	const docs = expectOptionalString(raw.docs, 'docs');
+	return description || docs
+		? { schema_version: 'x07.index-entry@0.1.0', name, version, cksum, yanked, description, docs }
+		: { schema_version: 'x07.index-entry@0.1.0', name, version, cksum, yanked };
 }
 
 export function decodePackageManifest(raw: unknown): PackageManifest {
@@ -84,12 +88,17 @@ export function decodePackageManifest(raw: unknown): PackageManifest {
 	const schema_version = expectString(raw.schema_version, 'schema_version');
 	const name = expectString(raw.name, 'name');
 	const description = expectOptionalString(raw.description, 'description');
+	const docs = expectOptionalString(raw.docs, 'docs');
 	const version = expectString(raw.version, 'version');
 	const module_root = expectString(raw.module_root, 'module_root');
 	const modules = expectStringArray(raw.modules, 'modules');
-	return description
-		? { schema_version, name, description, version, module_root, modules }
-		: { schema_version, name, version, module_root, modules };
+	const meta = raw.meta === undefined || raw.meta === null ? undefined : raw.meta;
+	if (meta !== undefined && !isRecord(meta)) throw new Error('meta must be an object');
+
+	const base = { schema_version, name, version, module_root, modules };
+	const withDesc = description ? { ...base, description } : base;
+	const withDocs = docs ? { ...withDesc, docs } : withDesc;
+	return meta ? { ...withDocs, meta } : withDocs;
 }
 
 export function decodePackageMetadataResponse(raw: unknown): PackageMetadataResponse {

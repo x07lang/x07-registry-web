@@ -53,8 +53,8 @@
 	<h2>Login + publish</h2>
 	<p class="muted">
 		Ensure your <code class="code-inline">x07-package.json</code> contains a <code class="code-inline">description</code>
-		(that’s what shows up on the package listing), bump the <code class="code-inline">version</code>, then publish the
-		package directory.
+		(and optionally <code class="code-inline">docs</code> for usage notes), bump the
+		<code class="code-inline">version</code>, then publish the package directory.
 	</p>
 	<p class="muted">
 		The first publish of a new package name creates the package and assigns you as the initial owner. To publish a new

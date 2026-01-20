@@ -20,15 +20,19 @@ export type IndexEntry = {
 	version: string;
 	cksum: string;
 	yanked: boolean;
+	description?: string;
+	docs?: string;
 };
 
 export type PackageManifest = {
 	schema_version: string;
 	name: string;
 	description?: string;
+	docs?: string;
 	version: string;
 	module_root: string;
 	modules: string[];
+	meta?: unknown;
 };
 
 export type PackageMetadataResponse = {
