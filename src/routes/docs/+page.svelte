@@ -40,6 +40,21 @@
 		<h2 class="doc-card__title">Policy</h2>
 		<p class="doc-card__desc muted">Registry policies and guidelines</p>
 	</a>
+
+	<a
+		href="https://x07lang.org/docs/getting-started/agent-quickstart/"
+		target="_blank"
+		rel="noopener noreferrer"
+		class="doc-card card card--glow"
+	>
+		<div class="doc-card__icon">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M12 2l3 7h7l-5.5 4 2.5 7-7-4.5L5 20l2.5-7L2 9h7z"></path>
+			</svg>
+		</div>
+		<h2 class="doc-card__title">Agent quickstart</h2>
+		<p class="doc-card__desc muted">Follow the canonical agent-first toolchain flow</p>
+	</a>
 </div>
 
 <style>
@@ -95,4 +110,3 @@
 		font-size: 0.9rem;
 	}
 </style>
-

@@ -93,6 +93,15 @@
 			<code class="code-inline">{indexBase ?? '—'}</code>
 		</div>
 		<CopyCode label="Copy CLI snippet" code={quickStart} />
+		<p class="muted" style="margin-top: 0.5rem;">
+			New to X07? Start with the
+			<a
+				href="https://x07lang.org/docs/getting-started/agent-quickstart/"
+				target="_blank"
+				rel="noopener noreferrer"
+				>Agent quickstart</a
+			>.
+		</p>
 	</section>
 </div>
 
