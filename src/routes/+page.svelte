@@ -94,7 +94,14 @@
 		</div>
 		<CopyCode label="Copy CLI snippet" code={quickStart} />
 		<p class="muted" style="margin-top: 0.5rem;">
-			New to X07? Start with the
+			New to X07? Install with
+			<a
+				href="https://x07lang.org/docs/getting-started/installer/"
+				target="_blank"
+				rel="noopener noreferrer"
+				>x07up</a
+			>
+			and start with the
 			<a
 				href="https://x07lang.org/docs/getting-started/agent-quickstart/"
 				target="_blank"
