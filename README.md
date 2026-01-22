@@ -4,6 +4,20 @@ Registry UI for `x07.io`.
 
 This is a static SPA built with SvelteKit (`@sveltejs/adapter-static` with `fallback: index.html`).
 
+## End-user docs
+
+The UI is a browse/search surface; the canonical package workflows live on x07lang.org:
+
+- Packages overview: https://x07lang.org/docs/packages/
+- Publishing by example: https://x07lang.org/docs/packages/publishing-by-example/
+
+This repo also ships a small UI-focused guide under `docs/getting-started/`.
+
+## Related repositories
+
+- Registry API: https://github.com/x07lang/x07-registry
+- Toolchain + canonical docs: https://github.com/x07lang/x07
+
 ## Runtime config
 
 The built site loads a runtime config JSON file at:
