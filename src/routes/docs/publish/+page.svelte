@@ -34,6 +34,12 @@
 	<p class="muted">
 		To browse packages, go to <a href="/packages">/packages</a> (or https://x07.io/packages).
 	</p>
+	<p class="muted">
+		Canonical end-to-end tutorial:
+		<a href="https://x07lang.org/docs/packages/publishing-by-example/" target="_blank" rel="noopener noreferrer">
+			x07lang.org/docs/packages/publishing-by-example/
+		</a>
+	</p>
 	<h2>Getting a token</h2>
 	<p class="muted">
 		Sign in with GitHub on <a href="/settings/tokens">/settings/tokens</a>, then create a token with the
