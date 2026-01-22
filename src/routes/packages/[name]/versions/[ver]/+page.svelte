@@ -103,7 +103,7 @@
 	let installSnippet = $derived.by(() => {
 		if (!entry) return '';
 		const base = indexBase ?? '<index_base>';
-		return `x07 pkg add ${name}@${ver}\nx07 pkg lock --index sparse+${base}\n`;
+		return `x07 pkg add ${name}@${ver} --sync --index sparse+${base}\n`;
 	});
 
 	let verifySnippet = $derived.by(() => {
