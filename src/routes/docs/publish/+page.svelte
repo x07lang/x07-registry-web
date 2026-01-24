@@ -63,6 +63,11 @@
 		<code class="code-inline">version</code>, then publish the package directory.
 	</p>
 	<p class="muted">
+		To start a publishable package repo, run <code class="code-inline">x07 init --package</code> in an empty
+		directory (it creates <code class="code-inline">modules/</code>, <code class="code-inline">tests/</code>, and a
+		registry-compatible <code class="code-inline">x07-package.json</code>).
+	</p>
+	<p class="muted">
 		The first publish of a new package name creates the package and assigns you as the initial owner. To publish a new
 		version of an existing package, your account must be listed as an owner.
 	</p>
