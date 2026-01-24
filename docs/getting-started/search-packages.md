@@ -6,3 +6,6 @@ If you need the authoritative package name/version for `x07 pkg add`, copy it fr
 
 - https://x07lang.org/docs/packages/
 
+For agents (avoid duplicates), prefer the canonical capability map when choosing packages:
+
+- https://x07lang.org/agent/latest/catalog/capabilities.json
