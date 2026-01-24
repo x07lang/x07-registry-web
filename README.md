@@ -10,6 +10,7 @@ The UI is a browse/search surface; the canonical package workflows live on x07la
 
 - Packages overview: https://x07lang.org/docs/packages/
 - Publishing by example: https://x07lang.org/docs/packages/publishing-by-example/
+- Agent contracts (canonical machine endpoints): https://x07lang.org/docs/agent/contract/
 
 This repo also ships a small UI-focused guide under `docs/getting-started/`.
 

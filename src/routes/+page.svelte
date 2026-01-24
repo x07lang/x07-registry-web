@@ -150,6 +150,24 @@
 		<h2>Agent panel</h2>
 		<p class="muted">These endpoints are deterministic and copy/paste friendly.</p>
 		<CopyCode label="Copy request" code={indexConfigCurl} />
+		<p class="muted" style="margin-top: 0.75rem;">
+			Registry catalog:
+			<a
+				href="https://registry.x07.io/index/catalog.json"
+				target="_blank"
+				rel="noopener noreferrer"
+				>registry.x07.io/index/catalog.json</a
+			>
+		</p>
+		<p class="muted">
+			Agent portal entrypoints:
+			<a
+				href="https://x07lang.org/agent/latest/entrypoints.json"
+				target="_blank"
+				rel="noopener noreferrer"
+				>x07lang.org/agent/latest/entrypoints.json</a
+			>
+		</p>
 		{#if indexConfigError}
 			<details class="details" style="margin-top: 0.75rem;">
 				<summary class="muted">Index config unavailable</summary>
