@@ -2,6 +2,8 @@
 
 Registry UI for `x07.io`.
 
+Support: see `SUPPORT.md`.
+
 This is a static SPA built with SvelteKit (`@sveltejs/adapter-static` with `fallback: index.html`).
 
 ## End-user docs
