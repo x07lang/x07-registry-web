@@ -21,6 +21,10 @@ This repo also ships a small UI-focused guide under `docs/getting-started/`.
 - Registry API: https://github.com/x07lang/x07-registry
 - Toolchain + canonical docs: https://github.com/x07lang/x07
 
+## Toolchain schemas
+
+`x07.io` serves the canonical JSON Schema files under `/spec/` (for example: `/spec/x07-host-runner.report.schema.json`).
+
 ## Runtime config
 
 The built site loads a runtime config JSON file at:
