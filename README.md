@@ -23,7 +23,7 @@ This repo also ships a small UI-focused guide under `docs/getting-started/`.
 
 ## Toolchain schemas
 
-`x07.io` serves the canonical JSON Schema files under `/spec/` (for example: `/spec/x07-host-runner.report.schema.json`).
+`x07.io` serves the canonical JSON Schema files under `/spec/` (for example: `/spec/x07-run.report.schema.json`).
 
 ## Runtime config
 
