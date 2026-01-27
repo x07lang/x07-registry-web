@@ -20,7 +20,7 @@
 
 	let snippet = $derived.by(() => {
 		const base = indexBase ?? '<index_base>';
-		return `# Login (store token locally; prompts for token)\n\nx07 pkg login --index sparse+${base}\n\n# Login (non-interactive)\n\nprintf '%s' \"$X07_TOKEN\" | x07 pkg login --index sparse+${base} --token-stdin\n\n# Publish a package directory\n\nx07 pkg publish --index sparse+${base} --package <DIR>\n`;
+		return `# Create a publishable package repo\n\nmkdir mypkg && cd mypkg\nx07 init --package\n\n# Edit x07-package.json: set description/docs; bump version\nx07 test --manifest tests/tests.json\nx07 pkg pack --package . --out dist/<name>-<version>.x07pkg\n\n# Login (store token locally; prompts for token)\n\nx07 pkg login --index sparse+${base}\n\n# Login (non-interactive)\n\nprintf '%s' \"$X07_TOKEN\" | x07 pkg login --index sparse+${base} --token-stdin\n\n# Publish the package directory\n\nx07 pkg publish --index sparse+${base} --package .\n`;
 	});
 </script>
 
@@ -64,8 +64,10 @@
 	</p>
 	<p class="muted">
 		To start a publishable package repo, run <code class="code-inline">x07 init --package</code> in an empty
-		directory (it creates <code class="code-inline">modules/</code>, <code class="code-inline">tests/</code>, and a
-		registry-compatible <code class="code-inline">x07-package.json</code>).
+		directory (it creates <code class="code-inline">modules/</code>, <code class="code-inline">tests/</code>, a
+		registry-compatible <code class="code-inline">x07-package.json</code>, and the agent kit:
+		<code class="code-inline">AGENT.md</code>, <code class="code-inline">x07-toolchain.toml</code>,
+		<code class="code-inline">.agent/</code>).
 	</p>
 	<p class="muted">
 		The first publish of a new package name creates the package and assigns you as the initial owner. To publish a new
@@ -74,7 +76,7 @@
 	{#if error}
 		<ErrorBox {error} />
 	{:else}
-		<CopyCode label="Copy publish snippet" code={snippet} />
+		<CopyCode label="Copy publish workflow" code={snippet} />
 	{/if}
 </div>
 

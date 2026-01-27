@@ -8,8 +8,9 @@ Canonical docs:
 
 Typical workflow:
 
-1. Build and test locally (`x07 test`).
-2. Pack: `x07 pkg pack --package <dir> --out <path>`.
-3. Login: `x07 pkg login` (GitHub OAuth).
-4. Publish: `x07 pkg publish`.
-
+0. Create a publishable package repo: `x07 init --package` (also writes the agent kit: `AGENT.md`, `x07-toolchain.toml`, `.agent/`).
+1. Edit `x07-package.json`: set `description`/`docs`, bump `version`.
+2. Test: `x07 test --manifest tests/tests.json`.
+3. Pack: `x07 pkg pack --package . --out dist/<name>-<version>.x07pkg`.
+4. Login: `x07 pkg login` (GitHub OAuth).
+5. Publish: `x07 pkg publish`.
