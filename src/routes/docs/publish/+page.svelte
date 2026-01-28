@@ -67,7 +67,8 @@
 		directory (it creates <code class="code-inline">modules/</code>, <code class="code-inline">tests/</code>, a
 		registry-compatible <code class="code-inline">x07-package.json</code>, and the agent kit:
 		<code class="code-inline">AGENT.md</code>, <code class="code-inline">x07-toolchain.toml</code>,
-		<code class="code-inline">.agent/</code>).
+		<code class="code-inline">.agent/docs/</code>, <code class="code-inline">.agent/skills/</code>; linked to the
+		installed toolchain when available).
 	</p>
 	<p class="muted">
 		The first publish of a new package name creates the package and assigns you as the initial owner. To publish a new

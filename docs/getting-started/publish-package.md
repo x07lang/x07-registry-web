@@ -8,7 +8,7 @@ Canonical docs:
 
 Typical workflow:
 
-0. Create a publishable package repo: `x07 init --package` (also writes the agent kit: `AGENT.md`, `x07-toolchain.toml`, `.agent/`).
+0. Create a publishable package repo: `x07 init --package` (also writes the agent kit: `AGENT.md`, `x07-toolchain.toml`, `.agent/docs/`, `.agent/skills/`; linked to the installed toolchain when available).
 1. Edit `x07-package.json`: set `description`/`docs`, bump `version`.
 2. Test: `x07 test --manifest tests/tests.json`.
 3. Pack: `x07 pkg pack --package . --out dist/<name>-<version>.x07pkg`.
