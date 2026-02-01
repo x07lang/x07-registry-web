@@ -106,7 +106,7 @@
 	let installSnippet = $derived.by(() => {
 		if (!latest) return '';
 		const base = indexBase ?? '<index_base>';
-		return `x07 pkg add ${name}@${latest} --sync --index sparse+${base}\n`;
+		return `x07 pkg add ${name} --sync --index sparse+${base}\n`;
 	});
 
 	let importSnippet = $derived.by(() => {

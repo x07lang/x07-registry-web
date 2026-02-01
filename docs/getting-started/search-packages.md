@@ -2,7 +2,13 @@
 
 The UI queries the registry sparse index (catalog + per-package entries) and renders package/version metadata.
 
-If you need the authoritative package name/version for `x07 pkg add`, copy it from the UI and use the canonical workflow in the toolchain docs:
+To install a package, use the X07 toolchain:
+
+- `x07 pkg add <name> --sync` (selects the latest non-yanked version)
+- `x07 pkg versions <name>` (list available versions)
+- `x07 pkg add <name>@<version> --sync` (pin a specific version)
+
+See the canonical workflow docs:
 
 - https://x07lang.org/docs/packages/
 
