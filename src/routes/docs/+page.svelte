@@ -55,6 +55,40 @@
 		<h2 class="doc-card__title">Agent quickstart</h2>
 		<p class="doc-card__desc muted">Follow the canonical agent-first toolchain flow</p>
 	</a>
+
+	<a
+		href="https://x07lang.org/docs/about/"
+		target="_blank"
+		rel="noopener noreferrer"
+		class="doc-card card card--glow"
+	>
+		<div class="doc-card__icon">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="10"></circle>
+				<line x1="12" y1="16" x2="12" y2="12"></line>
+				<line x1="12" y1="8" x2="12.01" y2="8"></line>
+			</svg>
+		</div>
+		<h2 class="doc-card__title">Why X07</h2>
+		<p class="doc-card__desc muted">What X07 optimizes for (agent-first, deterministic)</p>
+	</a>
+
+	<a
+		href="https://x07lang.org/docs/faq/"
+		target="_blank"
+		rel="noopener noreferrer"
+		class="doc-card card card--glow"
+	>
+		<div class="doc-card__icon">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="10"></circle>
+				<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+				<line x1="12" y1="17" x2="12.01" y2="17"></line>
+			</svg>
+		</div>
+		<h2 class="doc-card__title">FAQ</h2>
+		<p class="doc-card__desc muted">Common questions and canonical answers</p>
+	</a>
 </div>
 
 <style>
