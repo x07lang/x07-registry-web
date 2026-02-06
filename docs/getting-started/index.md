@@ -6,6 +6,9 @@ For the canonical package workflow (how to add, lock, pack, and publish packages
 
 - Packages overview: https://x07lang.org/docs/packages/
 - Publishing by example: https://x07lang.org/docs/packages/publishing-by-example/
+- Agent quickstart: https://x07lang.org/docs/getting-started/agent-quickstart/
+- Why X07: https://x07lang.org/docs/about/
+- FAQ: https://x07lang.org/docs/faq/
 
 ## What the UI is for
 
@@ -22,4 +25,3 @@ For the canonical package workflow (how to add, lock, pack, and publish packages
 ## Local development
 
 See `README.md` for how to run the dev server and build the static site.
-

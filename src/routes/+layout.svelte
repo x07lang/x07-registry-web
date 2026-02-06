@@ -52,6 +52,8 @@
 			<a href="/api">API</a>
 			<span class="nav__divider" aria-hidden="true"></span>
 			<a href="https://x07lang.org/" target="_blank" rel="noopener noreferrer">x07lang.org</a>
+			<a href="https://discord.gg/59xuEuPN47" target="_blank" rel="noopener noreferrer">Discord</a>
+			<a href="mailto:support@x07lang.org">Email</a>
 			<a href="https://github.com/x07lang/x07" target="_blank" rel="noopener noreferrer">GitHub</a>
 		</nav>
 	</div>
@@ -83,6 +85,8 @@
 		<span class="footer__links">
 			<a href="/docs">Documentation</a>
 			<a href="https://x07lang.org/" target="_blank" rel="noopener noreferrer">x07lang.org</a>
+			<a href="https://discord.gg/59xuEuPN47" target="_blank" rel="noopener noreferrer">Discord</a>
+			<a href="mailto:support@x07lang.org">support@x07lang.org</a>
 			<a href="https://github.com/x07lang/x07" target="_blank" rel="noopener noreferrer">GitHub</a>
 		</span>
 	</div>

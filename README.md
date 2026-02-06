@@ -4,6 +4,11 @@ Registry UI for `x07.io`.
 
 Support: see `SUPPORT.md`.
 
+Community:
+
+- Discord: https://discord.gg/59xuEuPN47
+- Email: support@x07lang.org
+
 This is a static SPA built with SvelteKit (`@sveltejs/adapter-static` with `fallback: index.html`).
 
 ## End-user docs
