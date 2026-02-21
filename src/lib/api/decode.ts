@@ -1,4 +1,7 @@
 import type {
+	AdvisoriesResponse,
+	AdvisoryCreateResponse,
+	AdvisoryWithdrawResponse,
 	AccountResponse,
 	AuthSessionResponse,
 	Catalog,
@@ -7,6 +10,9 @@ import type {
 	OwnersResponse,
 	PackageManifest,
 	PackageMetadataResponse,
+	PkgAdvisory,
+	PkgAdvisoryKind,
+	PkgAdvisorySeverity,
 	SearchResponse,
 	SimpleOkResponse,
 	TokenCreateResponse,
@@ -56,6 +62,62 @@ function expectOptionalNumber(value: unknown, field: string): number | undefined
 	return expectNumber(value, field);
 }
 
+function expectPkgAdvisoryKind(value: unknown, field: string): PkgAdvisoryKind {
+	const v = expectString(value, field) as PkgAdvisoryKind;
+	switch (v) {
+		case 'broken':
+		case 'security':
+		case 'deprecated':
+			return v;
+		default:
+			throw new Error(`${field} must be a valid advisory kind`);
+	}
+}
+
+function expectPkgAdvisorySeverity(value: unknown, field: string): PkgAdvisorySeverity {
+	const v = expectString(value, field) as PkgAdvisorySeverity;
+	switch (v) {
+		case 'low':
+		case 'medium':
+		case 'high':
+		case 'critical':
+			return v;
+		default:
+			throw new Error(`${field} must be a valid advisory severity`);
+	}
+}
+
+export function decodePkgAdvisory(raw: unknown): PkgAdvisory {
+	if (!isRecord(raw)) throw new Error('advisory must be an object');
+	const schemaVersion = expectString(raw.schema_version, 'schema_version');
+	if (schemaVersion !== 'x07.pkg.advisory@0.1.0') throw new Error('unsupported advisory schema_version');
+	const id = expectString(raw.id, 'id');
+	const pkg = expectString(raw.package, 'package');
+	const version = expectString(raw.version, 'version');
+	const kind = expectPkgAdvisoryKind(raw.kind, 'kind');
+	const severity = expectPkgAdvisorySeverity(raw.severity, 'severity');
+	const summary = expectString(raw.summary, 'summary');
+	const url = expectOptionalString(raw.url, 'url');
+	const details = expectOptionalString(raw.details, 'details');
+	const created_at_utc = expectString(raw.created_at_utc, 'created_at_utc');
+	const withdrawn_at_utc = expectOptionalString(raw.withdrawn_at_utc, 'withdrawn_at_utc');
+
+	const out: PkgAdvisory = {
+		schema_version: 'x07.pkg.advisory@0.1.0',
+		id,
+		package: pkg,
+		version,
+		kind,
+		severity,
+		summary,
+		created_at_utc
+	};
+	if (url) out.url = url;
+	if (details) out.details = details;
+	if (withdrawn_at_utc) out.withdrawn_at_utc = withdrawn_at_utc;
+	return out;
+}
+
 export function decodeIndexConfig(raw: unknown): IndexConfig {
 	if (!isRecord(raw)) throw new Error('index config must be an object');
 	const dl = expectString(raw.dl, 'dl');
@@ -78,9 +140,18 @@ export function decodeIndexEntry(raw: unknown): IndexEntry {
 	const yanked = expectBool(raw.yanked, 'yanked');
 	const description = expectOptionalString(raw.description, 'description');
 	const docs = expectOptionalString(raw.docs, 'docs');
-	return description || docs
-		? { schema_version: 'x07.index-entry@0.1.0', name, version, cksum, yanked, description, docs }
-		: { schema_version: 'x07.index-entry@0.1.0', name, version, cksum, yanked };
+	const advisoriesRaw = raw.advisories;
+	let advisories: PkgAdvisory[] | undefined;
+	if (advisoriesRaw !== undefined && advisoriesRaw !== null) {
+		if (!Array.isArray(advisoriesRaw)) throw new Error('advisories must be an array');
+		advisories = advisoriesRaw.map(decodePkgAdvisory);
+	}
+
+	const out: IndexEntry = { schema_version: 'x07.index-entry@0.1.0', name, version, cksum, yanked };
+	if (description) out.description = description;
+	if (docs) out.docs = docs;
+	if (advisories) out.advisories = advisories;
+	return out;
 }
 
 export function decodePackageManifest(raw: unknown): PackageManifest {
@@ -216,6 +287,29 @@ export function decodeTokenListResponse(raw: unknown): TokenListResponse {
 	if (!Array.isArray(tokensRaw)) throw new Error('tokens must be an array');
 	const tokens = tokensRaw.map(decodeTokenInfo);
 	return { ok: true, tokens };
+}
+
+export function decodeAdvisoriesResponse(raw: unknown): AdvisoriesResponse {
+	if (!isRecord(raw)) throw new Error('advisories response must be an object');
+	if (raw.ok !== true) throw new Error('advisories response ok must be true');
+	const name = expectString(raw.name, 'name');
+	const version = expectString(raw.version, 'version');
+	const advisoriesRaw = raw.advisories;
+	if (!Array.isArray(advisoriesRaw)) throw new Error('advisories must be an array');
+	const advisories = advisoriesRaw.map(decodePkgAdvisory);
+	return { ok: true, name, version, advisories };
+}
+
+export function decodeAdvisoryCreateResponse(raw: unknown): AdvisoryCreateResponse {
+	if (!isRecord(raw)) throw new Error('advisory create response must be an object');
+	if (raw.ok !== true) throw new Error('advisory create response ok must be true');
+	return { ok: true, advisory: decodePkgAdvisory(raw.advisory) };
+}
+
+export function decodeAdvisoryWithdrawResponse(raw: unknown): AdvisoryWithdrawResponse {
+	if (!isRecord(raw)) throw new Error('advisory withdraw response must be an object');
+	if (raw.ok !== true) throw new Error('advisory withdraw response ok must be true');
+	return { ok: true, advisory: decodePkgAdvisory(raw.advisory) };
 }
 
 export function decodeTokenCreateResponse(raw: unknown): TokenCreateResponse {

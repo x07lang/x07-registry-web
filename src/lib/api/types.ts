@@ -22,6 +22,25 @@ export type IndexEntry = {
 	yanked: boolean;
 	description?: string;
 	docs?: string;
+	advisories?: PkgAdvisory[];
+};
+
+export type PkgAdvisoryKind = 'broken' | 'security' | 'deprecated';
+
+export type PkgAdvisorySeverity = 'low' | 'medium' | 'high' | 'critical';
+
+export type PkgAdvisory = {
+	schema_version: 'x07.pkg.advisory@0.1.0';
+	id: string;
+	package: string;
+	version: string;
+	kind: PkgAdvisoryKind;
+	severity: PkgAdvisorySeverity;
+	summary: string;
+	url?: string;
+	details?: string;
+	created_at_utc: string;
+	withdrawn_at_utc?: string;
 };
 
 export type PackageManifest = {
@@ -132,4 +151,29 @@ export type YankResponse = {
 	name: string;
 	version: string;
 	yanked: boolean;
+};
+
+export type AdvisoriesResponse = {
+	ok: true;
+	name: string;
+	version: string;
+	advisories: PkgAdvisory[];
+};
+
+export type AdvisoryCreateRequest = {
+	kind: PkgAdvisoryKind;
+	severity: PkgAdvisorySeverity;
+	summary: string;
+	url?: string;
+	details?: string;
+};
+
+export type AdvisoryCreateResponse = {
+	ok: true;
+	advisory: PkgAdvisory;
+};
+
+export type AdvisoryWithdrawResponse = {
+	ok: true;
+	advisory: PkgAdvisory;
 };

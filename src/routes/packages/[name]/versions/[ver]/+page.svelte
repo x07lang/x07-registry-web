@@ -8,7 +8,10 @@
 		getIndexConfig,
 		getDownloadUrl,
 		getIndexEntries,
+		listAdvisories,
 		getPackageMetadata,
+		createAdvisory,
+		withdrawAdvisory,
 		validatePackageName,
 		yankVersion
 	} from '$lib/api/registry';
@@ -17,7 +20,10 @@
 		AuthSessionUser,
 		IndexConfig,
 		IndexEntry,
-		PackageMetadataResponse
+		PackageMetadataResponse,
+		PkgAdvisory,
+		PkgAdvisoryKind,
+		PkgAdvisorySeverity
 	} from '$lib/api/types';
 	import CopyButton from '$lib/ui/components/CopyButton.svelte';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
@@ -36,10 +42,20 @@
 	let indexBase = $state<string | null>(null);
 	let user = $state<AuthSessionUser | null>(null);
 	let csrfToken = $state<string | null>(null);
+	let advisories = $state<PkgAdvisory[] | null>(null);
 
 	let error = $state<ApiError | null>(null);
 	let yankError = $state<ApiError | null>(null);
 	let yankBusy = $state(false);
+	let advisoryError = $state<ApiError | null>(null);
+	let advisoryBusy = $state(false);
+	let withdrawBusyId = $state<string | null>(null);
+
+	let advisoryKind = $state<PkgAdvisoryKind>('broken');
+	let advisorySeverity = $state<PkgAdvisorySeverity>('high');
+	let advisorySummary = $state('');
+	let advisoryUrl = $state('');
+	let advisoryDetails = $state('');
 
 	onMount(() => {
 		// Session is loaded as part of the main effect.
@@ -56,8 +72,10 @@
 		indexBase = null;
 		user = null;
 		csrfToken = null;
+		advisories = null;
 		error = null;
 		yankError = null;
+		advisoryError = null;
 
 		let cancelled = false;
 		(async () => {
@@ -81,10 +99,15 @@
 				if (!found) throw new Error('version not found');
 				entry = found;
 
-				const [m, dl] = await Promise.all([getPackageMetadata(pkgName, version), getDownloadUrl(pkgName, version)]);
+				const [m, dl, adv] = await Promise.all([
+					getPackageMetadata(pkgName, version),
+					getDownloadUrl(pkgName, version),
+					listAdvisories(pkgName, version)
+				]);
 				if (cancelled) return;
 				meta = m;
 				downloadUrl = dl;
+				advisories = adv.advisories;
 			} catch (err) {
 				if (cancelled) return;
 				error = errorToApiError(err);
@@ -96,7 +119,7 @@
 		};
 	});
 
-	let canYank = $derived.by(() => {
+	let canManage = $derived.by(() => {
 		return user?.scopes?.includes('owner.manage') ?? false;
 	});
 
@@ -146,6 +169,67 @@
 			yankBusy = false;
 		}
 	}
+
+	async function refreshAdvisoriesAndEntry() {
+		const [entries, adv] = await Promise.all([getIndexEntries(name), listAdvisories(name, ver)]);
+		entry = entries.find((e) => e.version === ver) ?? entry;
+		advisories = adv.advisories;
+	}
+
+	async function submitAdvisory(event: Event) {
+		event.preventDefault();
+		if (!csrfToken) {
+			advisoryError = { code: 'X07WEB_AUTH', message: 'not signed in (go to /settings/tokens)' };
+			return;
+		}
+		const summary = advisorySummary.trim();
+		if (!summary) {
+			advisoryError = { code: 'X07WEB_BAD_INPUT', message: 'summary must be non-empty' };
+			return;
+		}
+
+		advisoryBusy = true;
+		advisoryError = null;
+		try {
+			await createAdvisory(
+				name,
+				ver,
+				{
+					kind: advisoryKind,
+					severity: advisorySeverity,
+					summary,
+					url: advisoryUrl.trim() || undefined,
+					details: advisoryDetails.trim() || undefined
+				},
+				csrfToken
+			);
+			await refreshAdvisoriesAndEntry();
+			advisorySummary = '';
+			advisoryUrl = '';
+			advisoryDetails = '';
+		} catch (err) {
+			advisoryError = errorToApiError(err);
+		} finally {
+			advisoryBusy = false;
+		}
+	}
+
+	async function withdraw(id: string) {
+		if (!csrfToken) {
+			advisoryError = { code: 'X07WEB_AUTH', message: 'not signed in (go to /settings/tokens)' };
+			return;
+		}
+		withdrawBusyId = id;
+		advisoryError = null;
+		try {
+			await withdrawAdvisory(name, ver, id, csrfToken);
+			await refreshAdvisoriesAndEntry();
+		} catch (err) {
+			advisoryError = errorToApiError(err);
+		} finally {
+			withdrawBusyId = null;
+		}
+	}
 </script>
 
 <div class="page-header">
@@ -162,6 +246,9 @@
 			<span class="badge badge--yanked">yanked</span>
 		{:else if entry}
 			<span class="badge badge--accent">ok</span>
+		{/if}
+		{#if entry?.advisories && entry.advisories.length > 0}
+			<span class="badge badge--warning">advised</span>
 		{/if}
 		{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
 			<span class="badge badge--accent">official</span>
@@ -205,6 +292,44 @@
 				</div>
 			{/if}
 
+			{#if advisories && advisories.length > 0}
+				<div class="advisories">
+					<h3>Advisories</h3>
+					<div class="advisories-list">
+						{#each advisories as adv (adv.id)}
+							<div class="advisory">
+								<div class="advisory-top">
+									<div class="advisory-badges">
+										<span class="badge badge--warning">{adv.kind}</span>
+										<span class="badge badge--warning">{adv.severity}</span>
+										{#if adv.withdrawn_at_utc}
+											<span class="badge badge--yanked">withdrawn</span>
+										{/if}
+									</div>
+									{#if adv.url}
+										<a class="advisory-link" href={adv.url} rel="nofollow">Link</a>
+									{/if}
+								</div>
+								<p class="advisory-summary">{adv.summary}</p>
+								{#if adv.details}
+									<pre class="advisory-details">{adv.details}</pre>
+								{/if}
+								{#if canManage && !adv.withdrawn_at_utc}
+									<button
+										class="btn btn--ghost"
+										type="button"
+										disabled={advisoryBusy || withdrawBusyId === adv.id}
+										onclick={() => withdraw(adv.id)}
+									>
+										{withdrawBusyId === adv.id ? 'Withdrawing…' : 'Withdraw'}
+									</button>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
 			<div class="release-actions">
 				{#if downloadUrl}
 					<a class="btn btn--primary" href={downloadUrl} rel="nofollow">Download v{ver}</a>
@@ -212,7 +337,7 @@
 				<a class="btn btn--ghost" href="/packages/{name}">View all versions</a>
 			</div>
 
-			{#if canYank}
+			{#if canManage}
 				<div class="yank-section">
 					<h3>Owner Actions</h3>
 					{#if yankError}
@@ -223,6 +348,56 @@
 					<button class="btn" class:btn--yanked={!entry.yanked} disabled={yankBusy} onclick={toggleYank}>
 						{#if entry.yanked}Un-yank version{:else}Yank version{/if}
 					</button>
+
+					<h4 class="advisory-actions-title">Advisories</h4>
+					{#if advisoryError}
+						<div style="margin-bottom: 1rem;">
+							<ErrorBox title="Advisory action failed" error={advisoryError} />
+						</div>
+					{/if}
+					<form class="advisory-form" onsubmit={submitAdvisory}>
+						<div class="advisory-form__row">
+							<div class="advisory-form__field">
+								<label for="advisory-kind">Kind</label>
+								<select id="advisory-kind" bind:value={advisoryKind}>
+									<option value="broken">broken</option>
+									<option value="security">security</option>
+									<option value="deprecated">deprecated</option>
+								</select>
+							</div>
+							<div class="advisory-form__field">
+								<label for="advisory-severity">Severity</label>
+								<select id="advisory-severity" bind:value={advisorySeverity}>
+									<option value="low">low</option>
+									<option value="medium">medium</option>
+									<option value="high">high</option>
+									<option value="critical">critical</option>
+								</select>
+							</div>
+						</div>
+						<div class="advisory-form__field">
+							<label for="advisory-summary">Summary</label>
+							<input
+								id="advisory-summary"
+								type="text"
+								placeholder="One-sentence summary"
+								bind:value={advisorySummary}
+							/>
+						</div>
+						<div class="advisory-form__field">
+							<label for="advisory-url">URL (optional)</label>
+							<input id="advisory-url" type="text" placeholder="https://…" bind:value={advisoryUrl} />
+						</div>
+						<div class="advisory-form__field">
+							<label for="advisory-details">Details (optional)</label>
+							<textarea id="advisory-details" rows="4" bind:value={advisoryDetails}></textarea>
+						</div>
+						<div class="advisory-form__actions">
+							<button class="btn btn--primary" type="submit" disabled={advisoryBusy}>
+								{advisoryBusy ? 'Creating…' : 'Create advisory'}
+							</button>
+						</div>
+					</form>
 				</div>
 			{/if}
 		</section>
@@ -408,6 +583,121 @@
 		margin-bottom: 1rem;
 	}
 
+	.advisories {
+		margin-bottom: 1.25rem;
+		padding: 0.95rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--panel);
+	}
+
+	.advisories h3 {
+		margin: 0 0 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.advisories-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.advisory {
+		padding: 0.75rem 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--bg);
+	}
+
+	.advisory-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.advisory-badges {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.advisory-link {
+		color: var(--accent);
+		font-size: 0.85rem;
+	}
+
+	.advisory-summary {
+		margin: 0;
+		color: var(--text-secondary);
+		font-size: 0.95rem;
+	}
+
+	.advisory-details {
+		margin: 0.5rem 0 0;
+		padding: 0.65rem 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--panel);
+		color: var(--muted);
+		font-size: 0.85rem;
+		white-space: pre-wrap;
+	}
+
+	.advisory-actions-title {
+		margin: 1.25rem 0 0.5rem;
+		font-size: 0.9rem;
+	}
+
+	.advisory-form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
+	}
+
+	.advisory-form__row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+	}
+
+	.advisory-form__field label {
+		margin-bottom: 0.35rem;
+	}
+
+	.advisory-form__actions {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	textarea {
+		width: 100%;
+		box-sizing: border-box;
+		font-family: inherit;
+		font-size: 0.95rem;
+		padding: 0.7rem 1rem;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--border);
+		background: var(--bg);
+		color: var(--text);
+		transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+		resize: vertical;
+	}
+
+	textarea:hover {
+		border-color: var(--border-strong);
+	}
+
+	textarea:focus,
+	textarea:focus-visible {
+		outline: none;
+		border-color: var(--accent-dim);
+		box-shadow: 0 0 0 3px var(--accent-subtle);
+	}
+
 	.btn--yanked {
 		border-color: rgba(248, 113, 113, 0.3);
 		background: var(--danger-subtle);
@@ -482,6 +772,10 @@
 
 	@media (max-width: 860px) {
 		.grid {
+			grid-template-columns: 1fr;
+		}
+
+		.advisory-form__row {
 			grid-template-columns: 1fr;
 		}
 	}

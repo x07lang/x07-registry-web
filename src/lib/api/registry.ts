@@ -8,6 +8,9 @@ import {
 	decodeCatalog,
 	decodeIndexConfig,
 	decodeIndexEntry,
+	decodeAdvisoriesResponse,
+	decodeAdvisoryCreateResponse,
+	decodeAdvisoryWithdrawResponse,
 	decodeOwnersResponse,
 	decodePackageMetadataResponse,
 	decodeSearchResponse,
@@ -17,6 +20,10 @@ import {
 	decodeYankResponse
 } from './decode';
 import type {
+	AdvisoriesResponse,
+	AdvisoryCreateRequest,
+	AdvisoryCreateResponse,
+	AdvisoryWithdrawResponse,
 	AuthSessionResponse,
 	Catalog,
 	IndexConfig,
@@ -34,6 +41,7 @@ let indexConfigPromise: Promise<IndexConfig> | null = null;
 const indexEntriesPromiseByName = new Map<string, Promise<IndexEntry[]>>();
 const ownersPromiseByName = new Map<string, Promise<OwnersResponse>>();
 const packageMetadataPromiseByKey = new Map<string, Promise<PackageMetadataResponse>>();
+const advisoriesPromiseByKey = new Map<string, Promise<AdvisoriesResponse>>();
 
 async function indexUrl(path: string): Promise<string> {
 	const cfg = await getRegistryWebConfig();
@@ -239,10 +247,71 @@ export async function yankVersion(
 ): Promise<YankResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL(`packages/${name}/${version}/yank`, cfg.api).toString();
-	return fetchJson(url, decodeYankResponse, undefined, {
+	const resp = await fetchJson(url, decodeYankResponse, undefined, {
 		method: 'POST',
 		credentials: 'include',
 		headers: { 'Content-Type': 'application/json', 'X-X07-CSRF': csrfToken },
 		body: JSON.stringify({ yanked })
 	});
+	indexEntriesPromiseByName.delete(name);
+	return resp;
+}
+
+export async function listAdvisories(name: string, version: string): Promise<AdvisoriesResponse> {
+	const key = `${name}@${version}`;
+	const existing = advisoriesPromiseByKey.get(key);
+	if (existing) return existing;
+
+	const p = (async () => {
+		const cfg = await getIndexConfig();
+		const url = new URL(`packages/${name}/${version}/advisories`, cfg.api).toString();
+		return fetchJson(url, decodeAdvisoriesResponse, undefined, {
+			credentials: 'include'
+		});
+	})();
+
+	advisoriesPromiseByKey.set(key, p);
+	try {
+		return await p;
+	} catch (err) {
+		advisoriesPromiseByKey.delete(key);
+		throw err;
+	}
+}
+
+export async function createAdvisory(
+	name: string,
+	version: string,
+	body: AdvisoryCreateRequest,
+	csrfToken: string
+): Promise<AdvisoryCreateResponse> {
+	const cfg = await getIndexConfig();
+	const url = new URL(`packages/${name}/${version}/advisories`, cfg.api).toString();
+	const resp = await fetchJson(url, decodeAdvisoryCreateResponse, undefined, {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'Content-Type': 'application/json', 'X-X07-CSRF': csrfToken },
+		body: JSON.stringify(body)
+	});
+	indexEntriesPromiseByName.delete(name);
+	advisoriesPromiseByKey.delete(`${name}@${version}`);
+	return resp;
+}
+
+export async function withdrawAdvisory(
+	name: string,
+	version: string,
+	advisoryId: string,
+	csrfToken: string
+): Promise<AdvisoryWithdrawResponse> {
+	const cfg = await getIndexConfig();
+	const url = new URL(`packages/${name}/${version}/advisories/${advisoryId}/withdraw`, cfg.api).toString();
+	const resp = await fetchJson(url, decodeAdvisoryWithdrawResponse, undefined, {
+		method: 'POST',
+		credentials: 'include',
+		headers: { 'X-X07-CSRF': csrfToken }
+	});
+	indexEntriesPromiseByName.delete(name);
+	advisoriesPromiseByKey.delete(`${name}@${version}`);
+	return resp;
 }
