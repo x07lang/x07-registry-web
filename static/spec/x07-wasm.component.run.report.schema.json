@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://x07.io/spec/x07-wasm.doctor.report.schema.json",
-  "title": "x07.wasm.doctor.report@0.1.0",
-  "description": "Machine-readable report emitted by `x07-wasm doctor` (Phase 0 toolchain preflight).",
+  "$id": "https://x07.io/spec/x07-wasm.component.run.report.schema.json",
+  "title": "x07.wasm.component.run.report@0.1.0",
+  "description": "Machine-readable report emitted by `x07-wasm component run` (Phase 1).",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "x07.wasm.doctor.report@0.1.0"
+      "const": "x07.wasm.component.run.report@0.1.0"
     },
     "command": {
       "type": "string",
-      "const": "x07-wasm.doctor"
+      "const": "x07-wasm.component.run"
     },
     "ok": {
       "type": "boolean"
@@ -46,6 +46,15 @@
     "result"
   ],
   "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "u64": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 18446744073709551615
+    },
     "tool_meta": {
       "type": "object",
       "additionalProperties": false,
@@ -88,12 +97,10 @@
           "maxLength": 4096
         },
         "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
+          "$ref": "#/$defs/sha256"
         },
         "bytes_len": {
-          "type": "integer",
-          "minimum": 0
+          "$ref": "#/$defs/u64"
         }
       },
       "required": [
@@ -130,8 +137,7 @@
           "$ref": "#/$defs/tool_meta"
         },
         "elapsed_ms": {
-          "type": "integer",
-          "minimum": 0
+          "$ref": "#/$defs/u64"
         },
         "cwd": {
           "type": "string"
@@ -170,62 +176,104 @@
         "nondeterminism"
       ]
     },
-    "result": {
+    "blob_ref": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "x07",
-        "clang",
-        "wasm_ld",
-        "wasmtime",
-        "wasm_tools",
-        "wit_bindgen",
-        "wac"
+        "bytes_len"
       ],
+      "description": "Reference to a binary blob. Provide either {path,sha256} or {base64}. sha256 is strongly recommended.",
       "properties": {
-        "x07": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "bytes_len": {
+          "$ref": "#/$defs/u64"
         },
-        "clang": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "sha256": {
+          "$ref": "#/$defs/sha256"
         },
-        "wasm_ld": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
         },
-        "wasmtime": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wasm_tools": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wit_bindgen": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wac": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "base64": {
+          "type": "string"
         }
       }
+    },
+    "run_outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "err",
+            "timeout",
+            "trap",
+            "engine_failed",
+            "component_compile_failed",
+            "linker_failed"
+          ]
+        },
+        "max_wall_ms": {
+          "$ref": "#/$defs/u64"
+        },
+        "trap": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 16384
+        }
+      },
+      "required": [
+        "outcome"
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "$ref": "#/$defs/file_digest"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 4096
+          },
+          "default": []
+        },
+        "stdin": {
+          "$ref": "#/$defs/blob_ref"
+        },
+        "stdout": {
+          "$ref": "#/$defs/blob_ref"
+        },
+        "stderr": {
+          "$ref": "#/$defs/blob_ref"
+        },
+        "run": {
+          "$ref": "#/$defs/run_outcome"
+        },
+        "incident_dir": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "component",
+        "args",
+        "stdin",
+        "stdout",
+        "stderr",
+        "run",
+        "incident_dir"
+      ]
     }
   }
 }
