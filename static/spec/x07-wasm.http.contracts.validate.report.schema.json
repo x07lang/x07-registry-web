@@ -1,18 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://x07.io/spec/x07-wasm.doctor.report.schema.json",
-  "title": "x07.wasm.doctor.report@0.1.0",
-  "description": "Machine-readable report emitted by `x07-wasm doctor` (Phase 0 toolchain preflight).",
+  "$id": "https://x07.io/spec/x07-wasm.http.contracts.validate.report.schema.json",
+  "title": "x07.wasm.http.contracts.validate.report@0.1.0",
+  "description": "Machine-readable report emitted by `x07-wasm http contracts validate`.",
   "type": "object",
   "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "ok",
+    "exit_code",
+    "diagnostics",
+    "meta",
+    "result"
+  ],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "x07.wasm.doctor.report@0.1.0"
+      "const": "x07.wasm.http.contracts.validate.report@0.1.0"
     },
     "command": {
       "type": "string",
-      "const": "x07-wasm.doctor"
+      "const": "x07-wasm.http.contracts.validate"
     },
     "ok": {
       "type": "boolean"
@@ -36,15 +45,6 @@
       "$ref": "#/$defs/result"
     }
   },
-  "required": [
-    "schema_version",
-    "command",
-    "ok",
-    "exit_code",
-    "diagnostics",
-    "meta",
-    "result"
-  ],
   "$defs": {
     "tool_meta": {
       "type": "object",
@@ -170,66 +170,63 @@
         "nondeterminism"
       ]
     },
+    "schema_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ok"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fixture_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "ok"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
     "result": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "x07",
-        "clang",
-        "wasm_ld",
-        "wasmtime",
-        "wasm_tools",
-        "wit_bindgen",
-        "wac"
+        "schemas",
+        "fixtures"
       ],
       "properties": {
-        "x07": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "schemas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/schema_check"
+          },
+          "default": []
         },
-        "clang": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wasm_ld": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wasmtime": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wasm_tools": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wit_bindgen": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wac": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "jco": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fixture_check"
+          },
+          "default": []
         }
       }
     }

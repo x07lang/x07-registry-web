@@ -1,18 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://x07.io/spec/x07-wasm.doctor.report.schema.json",
-  "title": "x07.wasm.doctor.report@0.1.0",
-  "description": "Machine-readable report emitted by `x07-wasm doctor` (Phase 0 toolchain preflight).",
+  "$id": "https://x07.io/spec/x07-wasm.http.serve.report.schema.json",
+  "title": "x07.wasm.http.serve.report@0.1.0",
+  "description": "Machine-readable report emitted by `x07-wasm http serve`.",
   "type": "object",
   "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "ok",
+    "exit_code",
+    "diagnostics",
+    "meta",
+    "result"
+  ],
   "properties": {
     "schema_version": {
-      "type": "string",
-      "const": "x07.wasm.doctor.report@0.1.0"
+      "const": "x07.wasm.http.serve.report@0.1.0"
     },
     "command": {
-      "type": "string",
-      "const": "x07-wasm.doctor"
+      "const": "x07-wasm.http.serve"
     },
     "ok": {
       "type": "boolean"
@@ -36,19 +43,14 @@
       "$ref": "#/$defs/result"
     }
   },
-  "required": [
-    "schema_version",
-    "command",
-    "ok",
-    "exit_code",
-    "diagnostics",
-    "meta",
-    "result"
-  ],
   "$defs": {
     "tool_meta": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
       "properties": {
         "name": {
           "const": "x07-wasm"
@@ -63,24 +65,19 @@
         "rustc": {
           "type": "string"
         },
-        "clang": {
-          "type": "string"
-        },
-        "wasm_ld": {
-          "type": "string"
-        },
         "wasmtime": {
           "type": "string"
         }
-      },
-      "required": [
-        "name",
-        "version"
-      ]
+      }
     },
     "file_digest": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes_len"
+      ],
       "properties": {
         "path": {
           "type": "string",
@@ -95,16 +92,16 @@
           "type": "integer",
           "minimum": 0
         }
-      },
-      "required": [
-        "path",
-        "sha256",
-        "bytes_len"
-      ]
+      }
     },
     "nondeterminism": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "uses_os_time",
+        "uses_network",
+        "uses_process"
+      ],
       "properties": {
         "uses_os_time": {
           "type": "boolean"
@@ -115,16 +112,20 @@
         "uses_process": {
           "type": "boolean"
         }
-      },
-      "required": [
-        "uses_os_time",
-        "uses_network",
-        "uses_process"
-      ]
+      }
     },
     "meta": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "tool",
+        "elapsed_ms",
+        "cwd",
+        "argv",
+        "inputs",
+        "outputs",
+        "nondeterminism"
+      ],
       "properties": {
         "tool": {
           "$ref": "#/$defs/tool_meta"
@@ -159,77 +160,82 @@
         "nondeterminism": {
           "$ref": "#/$defs/nondeterminism"
         }
-      },
+      }
+    },
+    "response_summary": {
+      "type": "object",
+      "additionalProperties": false,
       "required": [
-        "tool",
-        "elapsed_ms",
-        "cwd",
-        "argv",
-        "inputs",
-        "outputs",
-        "nondeterminism"
-      ]
+        "status",
+        "headers_count",
+        "body_bytes"
+      ],
+      "properties": {
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "headers_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     },
     "result": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "x07",
-        "clang",
-        "wasm_ld",
-        "wasmtime",
-        "wasm_tools",
-        "wit_bindgen",
-        "wac"
+        "mode",
+        "component",
+        "runtime_limits",
+        "requests",
+        "responses",
+        "trace_path",
+        "incident_dir"
       ],
       "properties": {
-        "x07": {
-          "type": [
-            "string",
-            "null"
+        "mode": {
+          "type": "string",
+          "enum": [
+            "canary",
+            "listen"
           ]
         },
-        "clang": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "component": {
+          "$ref": "#/$defs/file_digest"
         },
-        "wasm_ld": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "runtime_limits": {
+          "$ref": "https://x07.io/spec/x07-wasm.runtime.limits.schema.json"
         },
-        "wasmtime": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "requests": {
+          "type": "integer",
+          "minimum": 0
         },
-        "wasm_tools": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/response_summary"
+          },
+          "default": []
         },
-        "wit_bindgen": {
+        "trace_path": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "default": null
         },
-        "wac": {
+        "incident_dir": {
           "type": [
             "string",
             "null"
-          ]
-        },
-        "jco": {
-          "type": [
-            "string",
-            "null"
-          ]
+          ],
+          "default": null
         }
       }
     }
