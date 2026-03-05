@@ -929,6 +929,10 @@
       "path": "x07-website.package-index.schema.json"
     },
     {
+      "id": "x07.component.release@0.1.0",
+      "path": "x07.component.release@0.1.0.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07.contract.repro@0.1.0.schema.json",
       "path": "x07.contract.repro@0.1.0.schema.json"
     },
@@ -943,6 +947,10 @@
     {
       "id": "https://x07.io/spec/x07.pbt.repro@0.1.0.schema.json",
       "path": "x07.pbt.repro@0.1.0.schema.json"
+    },
+    {
+      "id": "x07.release.bundle@0.1.0",
+      "path": "x07.release.bundle@0.1.0.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07.verify.cex@0.1.0.schema.json",
@@ -973,6 +981,10 @@
       "path": "x07c.report.schema.json"
     },
     {
+      "id": "https://x07.org/spec/x07cli.specrows.schema.json",
+      "path": "x07cli.specrows.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07diag.schema.json",
       "path": "x07diag.schema.json"
     },
@@ -983,10 +995,6 @@
     {
       "id": "https://x07.io/spec/x07test.schema.json",
       "path": "x07test.schema.json"
-    },
-    {
-      "id": "https://x07.org/spec/x07cli.specrows.schema.json",
-      "path": "x07cli.specrows.schema.json"
     }
   ]
 }
