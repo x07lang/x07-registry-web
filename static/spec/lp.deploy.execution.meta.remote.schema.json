@@ -1,0 +1,754 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.deploy.execution.meta.remote.schema.json",
+  "title": "lp.deploy.execution.meta.remote@0.1.0",
+  "description": "Remote companion schema for lp.deploy.execution@0.1.0 in D-OSS. It preserves the Phase B/C deploy execution semantics while carrying remote-target, publish, provider, and lease state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mode",
+    "artifact_kind",
+    "target",
+    "target_profile",
+    "server",
+    "provider",
+    "outcome",
+    "updated_unix_ms",
+    "runtime",
+    "publish",
+    "routing",
+    "analysis",
+    "control"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.deploy.execution.meta.remote@0.1.0"
+    },
+    "mode": {
+      "const": "remote"
+    },
+    "artifact_kind": {
+      "const": "x07.app.pack@0.1.0"
+    },
+    "target": {
+      "$ref": "#/$defs/target"
+    },
+    "target_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "base_url",
+        "api_version",
+        "auth_kind",
+        "runtime_provider",
+        "routing_provider"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "const": "oss_remote"
+        },
+        "base_url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "api_version": {
+          "const": "v1"
+        },
+        "auth_kind": {
+          "const": "static_bearer"
+        },
+        "runtime_provider": {
+          "const": "lp.impl.runtime.wasmcloud_v1"
+        },
+        "routing_provider": {
+          "const": "lp.impl.routing.edge_http_v1"
+        },
+        "oci_registry": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "default_namespace": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "default_env": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/environment_key"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "server_id",
+        "base_url",
+        "api_version",
+        "capabilities_digest"
+      ],
+      "properties": {
+        "server_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "api_version": {
+          "const": "v1"
+        },
+        "capabilities_digest": {
+          "$ref": "#/$defs/digest_ref"
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_provider",
+        "routing_provider",
+        "telemetry_provider",
+        "secrets_provider",
+        "component_registry"
+      ],
+      "properties": {
+        "runtime_provider": {
+          "const": "lp.impl.runtime.wasmcloud_v1"
+        },
+        "routing_provider": {
+          "const": "lp.impl.routing.edge_http_v1"
+        },
+        "telemetry_provider": {
+          "const": "lp.impl.telemetry.otlp_http_v1"
+        },
+        "secrets_provider": {
+          "const": "lp.impl.secrets.server_store_v1"
+        },
+        "component_registry": {
+          "const": "lp.impl.component_registry.oci_v1"
+        }
+      }
+    },
+    "outcome": {
+      "$ref": "#/$defs/exec_outcome"
+    },
+    "started_unix_ms": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unix_ms"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "updated_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "ended_unix_ms": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/unix_ms"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "latest_decision_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "plan": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "default": null,
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "digest"
+      ],
+      "properties": {
+        "kind": {
+          "const": "x07.deploy.plan@0.2.0"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_ref"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lattice_id",
+        "application_name",
+        "stable",
+        "candidate"
+      ],
+      "properties": {
+        "lattice_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "application_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "stable": {
+          "$ref": "#/$defs/runtime_slot_remote"
+        },
+        "candidate": {
+          "$ref": "#/$defs/runtime_slot_remote"
+        }
+      }
+    },
+    "publish": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry",
+        "repository",
+        "namespace",
+        "component_refs",
+        "wadm_manifest_digest",
+        "published_unix_ms"
+      ],
+      "properties": {
+        "registry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "component_refs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/published_component_ref"
+          }
+        },
+        "wadm_manifest_digest": {
+          "$ref": "#/$defs/digest_ref"
+        },
+        "published_unix_ms": {
+          "$ref": "#/$defs/unix_ms"
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_base_url",
+        "candidate_weight_pct",
+        "algorithm",
+        "route_key_header"
+      ],
+      "properties": {
+        "public_base_url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "listener_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "candidate_weight_pct": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "algorithm": {
+          "$ref": "#/$defs/route_algorithm"
+        },
+        "route_key_header": {
+          "$ref": "#/$defs/route_key_header"
+        },
+        "last_updated_step_idx": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "router_state": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/artifact_ref_min"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "last_slo_decision"
+      ],
+      "properties": {
+        "last_slo_decision": {
+          "$ref": "#/$defs/analysis_decision"
+        },
+        "last_snapshot": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/artifact_ref_min"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "last_slo_report": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/artifact_ref_min"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "last_analysis_step_idx": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "default": {
+        "last_slo_decision": "none"
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lock_id",
+        "lease_expires_unix_ms",
+        "target_generation"
+      ],
+      "properties": {
+        "lock_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lease_expires_unix_ms": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/unix_ms"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "target_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lease_holder": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "last_idempotency_key": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "ext": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bytes_len": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "environment_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+    },
+    "digest_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "bytes_len"
+      ],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes_len": {
+          "$ref": "#/$defs/bytes_len"
+        }
+      }
+    },
+    "artifact_ref_min": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_ref"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "app_id",
+        "environment"
+      ],
+      "properties": {
+        "app_id": {
+          "$ref": "#/$defs/id"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment_key"
+        }
+      }
+    },
+    "analysis_decision": {
+      "type": "string",
+      "enum": [
+        "none",
+        "promote",
+        "rollback",
+        "inconclusive"
+      ]
+    },
+    "route_algorithm": {
+      "type": "string",
+      "enum": [
+        "hash_bucket_v1"
+      ]
+    },
+    "route_key_header": {
+      "type": "string",
+      "enum": [
+        "X-LP-Route-Key"
+      ]
+    },
+    "runtime_slot_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "started",
+        "healthy",
+        "stopped",
+        "failed"
+      ]
+    },
+    "exec_outcome": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "promoted",
+        "rolled_back",
+        "aborted",
+        "failed"
+      ]
+    },
+    "runtime_slot_remote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "revision_digest": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/digest_ref"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "app_name": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "instance_ref": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "endpoint_url": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "$ref": "#/$defs/runtime_slot_status"
+        },
+        "started_unix_ms": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/unix_ms"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ended_unix_ms": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/unix_ms"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "health": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "last_probe_unix_ms": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/unix_ms"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "last_report": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/artifact_ref_min"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "default": {
+            "ok": false
+          }
+        }
+      }
+    },
+    "published_component_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "oci_ref",
+        "digest"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "app",
+            "web",
+            "provider",
+            "unknown"
+          ]
+        },
+        "oci_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_ref"
+        }
+      }
+    }
+  }
+}

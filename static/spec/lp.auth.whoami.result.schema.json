@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.auth.whoami.result.schema.json",
+  "title": "lp.auth.whoami.result@0.1.0",
+  "description": "Result payload for x07lp whoami and hosted /v1/auth/whoami responses.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "account", "target", "default_context", "scope", "session_expires_unix_ms"],
+  "properties": {
+    "schema_version": { "const": "lp.auth.whoami.result@0.1.0" },
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account_id", "subject_kind", "plan"],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "subject_kind": { "type": "string", "enum": ["human", "service_account"] },
+        "email": { "type": "string", "format": "email" },
+        "display_name": { "type": "string", "maxLength": 256 },
+        "plan": { "type": "string", "enum": ["free", "trial", "paid", "enterprise"] }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "api_base", "audience"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "api_base": { "type": "string", "format": "uri" },
+        "audience": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    },
+    "default_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["org_id", "project_id"],
+      "properties": {
+        "org_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "org_slug": { "type": "string", "maxLength": 128 },
+        "project_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "project_slug": { "type": "string", "maxLength": 128 }
+      }
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[A-Za-z0-9._:-]+$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "session_expires_unix_ms": { "type": "integer", "minimum": 0 }
+  }
+}

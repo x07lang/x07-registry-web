@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.metering.event.schema.json",
+  "title": "lp.metering.event@0.1.0",
+  "description": "Canonical metering event for hosted x07 Platform usage, quota enforcement, and billing. Designed for append-only event streams and idempotent ingestion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "idempotency_key",
+    "occurred_unix_ms",
+    "received_unix_ms",
+    "producer",
+    "tenant",
+    "subject",
+    "measure",
+    "classification"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.metering.event@0.1.0" },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "occurred_unix_ms": { "type": "integer", "minimum": 0 },
+    "received_unix_ms": { "type": "integer", "minimum": 0 },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "adapter_id"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["router", "runtime", "artifact_store", "sqlite", "control_plane"]
+        },
+        "adapter_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "adapter_instance": { "type": "string", "maxLength": 256 },
+        "region": { "type": "string", "maxLength": 64 }
+      }
+    },
+    "tenant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account_id", "org_id", "project_id", "plan"],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "org_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "plan": { "type": "string", "enum": ["free", "trial", "paid", "enterprise"] }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource_kind", "resource_id", "app_id", "environment"],
+      "properties": {
+        "resource_kind": {
+          "type": "string",
+          "enum": ["deployment", "artifact", "sqlite_database", "app", "tenant"]
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "deployment_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+            },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "app_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+        }
+      }
+    },
+    "measure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "unit", "quantity"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "http.request",
+            "runtime.fuel",
+            "runtime.byte_second",
+            "artifact.storage_byte_second",
+            "artifact.egress_byte",
+            "sqlite.storage_byte_second",
+            "sqlite.request.read",
+            "sqlite.request.write",
+            "sqlite.egress_byte"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["count", "fuel", "byte_second", "byte"]
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "window_start_unix_ms": {
+          "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
+          "default": null
+        },
+        "window_end_unix_ms": {
+          "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }],
+          "default": null
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["billing_class", "quota_class"],
+      "properties": {
+        "billing_class": {
+          "type": "string",
+          "enum": ["billable", "sponsored", "non_billable"]
+        },
+        "quota_class": {
+          "type": "string",
+          "enum": ["enforced", "informational"]
+        }
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "http_method": { "type": "string", "maxLength": 16 },
+        "http_status_code": { "type": "integer", "minimum": 100, "maximum": 599 },
+        "public_ingress": { "type": "boolean" },
+        "shared_runtime": { "type": "boolean" },
+        "route_kind": { "type": "string", "maxLength": 32 },
+        "sqlite_db_id": { "type": "string", "maxLength": 128 }
+      },
+      "default": {}
+    },
+    "correlation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "decision_id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "incident_id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        }
+      },
+      "default": {}
+    },
+    "ext": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

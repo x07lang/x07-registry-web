@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.adapter.conformance.report.schema.json",
+  "title": "lp.adapter.conformance.report@0.1.0",
+  "description": "Machine-readable adapter certification report.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provider",
+    "target_profile",
+    "capabilities",
+    "scenarios",
+    "passed",
+    "failed",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.adapter.conformance.report@0.1.0" },
+    "provider": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "target_profile": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "capabilities": { "$ref": "lp.adapter.capabilities.schema.json" },
+    "scenarios": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/scenario" },
+      "maxItems": 256,
+      "default": []
+    },
+    "passed": { "type": "integer", "minimum": 0 },
+    "failed": { "type": "integer", "minimum": 0 },
+    "diagnostics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/diag" },
+      "maxItems": 4096,
+      "default": []
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "ok"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "ok": { "type": "boolean" },
+        "details": { "type": "string", "maxLength": 2048 }
+      }
+    },
+    "diag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "severity": { "type": "string", "enum": ["info", "warn", "error"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 4096 },
+        "stage": { "type": "string", "maxLength": 64 }
+      }
+    }
+  }
+}

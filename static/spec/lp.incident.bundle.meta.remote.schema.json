@@ -1,0 +1,399 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.incident.bundle.meta.remote.schema.json",
+  "title": "lp.incident.bundle.meta.remote@0.1.0",
+  "description": "Remote companion schema for the meta object stored with lp.incident.bundle@0.1.0 and for the materialized incident.meta.remote.json file in D-OSS.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "classification",
+    "source",
+    "incident_status",
+    "deployment_id",
+    "run_id",
+    "target",
+    "captured_unix_ms",
+    "provider"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.incident.bundle.meta.remote@0.1.0"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "http_5xx",
+        "runtime_start_failed",
+        "runtime_health_failed",
+        "slo_rollback",
+        "manual_capture",
+        "app_kill",
+        "platform_kill",
+        "remote_upload_failed",
+        "remote_secret_not_found",
+        "remote_capabilities_mismatch",
+        "remote_probe_failed"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "router",
+        "runtime",
+        "slo",
+        "manual",
+        "control_plane",
+        "remote_api",
+        "telemetry"
+      ]
+    },
+    "incident_status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "regression_generated",
+        "resolved"
+      ]
+    },
+    "deployment_id": {
+      "$ref": "#/$defs/id"
+    },
+    "run_id": {
+      "$ref": "#/$defs/id"
+    },
+    "target": {
+      "$ref": "#/$defs/target"
+    },
+    "captured_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "server_id",
+        "runtime_provider",
+        "routing_provider"
+      ],
+      "properties": {
+        "server_id": {
+          "$ref": "#/$defs/id"
+        },
+        "runtime_provider": {
+          "const": "lp.impl.runtime.wasmcloud_v1"
+        },
+        "routing_provider": {
+          "const": "lp.impl.routing.edge_http_v1"
+        },
+        "telemetry_provider": {
+          "oneOf": [
+            {
+              "const": "lp.impl.telemetry.otlp_http_v1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "request_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "trace_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "edge_request_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "pack_digest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/digest_ref"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "slot": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "candidate",
+        "none"
+      ],
+      "default": "none"
+    },
+    "candidate_weight_pct": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "status_code": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "route_key": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 512
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "decision_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "regression_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "remote_runtime": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "default": null,
+      "additionalProperties": false,
+      "required": [
+        "lattice_id",
+        "application_name"
+      ],
+      "properties": {
+        "lattice_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "application_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "instance_ref": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "public_base_url": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bytes_len": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "environment_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+    },
+    "digest_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "bytes_len"
+      ],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes_len": {
+          "$ref": "#/$defs/bytes_len"
+        }
+      }
+    },
+    "artifact_ref_min": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_ref"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "app_id",
+        "environment"
+      ],
+      "properties": {
+        "app_id": {
+          "$ref": "#/$defs/id"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment_key"
+        }
+      }
+    },
+    "analysis_decision": {
+      "type": "string",
+      "enum": [
+        "none",
+        "promote",
+        "rollback",
+        "inconclusive"
+      ]
+    },
+    "route_algorithm": {
+      "type": "string",
+      "enum": [
+        "hash_bucket_v1"
+      ]
+    },
+    "route_key_header": {
+      "type": "string",
+      "enum": [
+        "X-LP-Route-Key"
+      ]
+    },
+    "runtime_slot_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "started",
+        "healthy",
+        "stopped",
+        "failed"
+      ]
+    },
+    "exec_outcome": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "promoted",
+        "rolled_back",
+        "aborted",
+        "failed"
+      ]
+    }
+  }
+}

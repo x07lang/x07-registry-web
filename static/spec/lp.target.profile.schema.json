@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.target.profile.schema.json",
+  "title": "lp.target.profile@0.1.0",
+  "description": "Creator-side remote target profile for x07lp.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "name",
+    "kind",
+    "base_url",
+    "api_version",
+    "auth",
+    "runtime_provider",
+    "routing_provider"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.target.profile@0.1.0" },
+    "name": { "$ref": "#/$defs/name" },
+    "kind": { "const": "oss_remote" },
+    "base_url": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "api_version": { "const": "v1" },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "token_ref"],
+      "properties": {
+        "kind": { "const": "static_bearer" },
+        "token_ref": { "type": "string", "minLength": 1, "maxLength": 4096 }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["system", "ca_bundle", "pinned_spki"] },
+        "ca_bundle_path": { "type": "string", "minLength": 1, "maxLength": 4096 },
+        "pinned_spki_sha256": { "$ref": "#/$defs/sha256_prefixed" }
+      }
+    },
+    "runtime_provider": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "routing_provider": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "oci_registry": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "lattice_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "default_namespace": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "default_env": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "telemetry_collector_hint": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "expect_capabilities_digest": { "$ref": "#/$defs/sha256_prefixed" }
+  },
+  "$defs": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "sha256_prefixed": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

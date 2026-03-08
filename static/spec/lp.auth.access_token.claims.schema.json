@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.auth.access_token.claims.schema.json",
+  "title": "lp.auth.access_token.claims@0.1.0",
+  "description": "Decoded JWT access token claims for the hosted x07 Platform. This schema validates the decoded claims object, not the compact serialized token string.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "iss",
+    "sub",
+    "aud",
+    "exp",
+    "iat",
+    "nbf",
+    "jti",
+    "client_id",
+    "scope",
+    "token_use",
+    "x07_subject_kind",
+    "x07_account_id"
+  ],
+  "properties": {
+    "iss": { "type": "string", "format": "uri" },
+    "sub": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "aud": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "exp": { "type": "integer", "minimum": 0 },
+    "iat": { "type": "integer", "minimum": 0 },
+    "nbf": { "type": "integer", "minimum": 0 },
+    "jti": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "client_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+( [A-Za-z0-9._:-]+)*$"
+    },
+    "token_use": { "const": "access" },
+    "x07_subject_kind": {
+      "type": "string",
+      "enum": ["human", "service_account"]
+    },
+    "x07_account_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "x07_org_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "x07_project_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "x07_plan": {
+      "oneOf": [
+        { "type": "string", "enum": ["free", "trial", "paid", "enterprise"] },
+        { "type": "null" }
+      ],
+      "default": null
+    }
+  }
+}

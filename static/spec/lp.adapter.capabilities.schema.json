@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.adapter.capabilities.schema.json",
+  "title": "lp.adapter.capabilities@0.1.0",
+  "description": "Provider adapter capability summary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provider",
+    "runtime_kind",
+    "routing_kind",
+    "artifact_distribution",
+    "supports_incidents",
+    "supports_regressions",
+    "supports_pause",
+    "supports_rerun",
+    "supports_weighted_canary",
+    "supports_otlp",
+    "supports_server_side_secrets"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.adapter.capabilities@0.1.0" },
+    "provider": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "runtime_kind": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "routing_kind": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "artifact_distribution": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "supports_incidents": { "type": "boolean" },
+    "supports_regressions": { "type": "boolean" },
+    "supports_pause": { "type": "boolean" },
+    "supports_rerun": { "type": "boolean" },
+    "supports_weighted_canary": { "type": "boolean" },
+    "supports_otlp": { "type": "boolean" },
+    "supports_server_side_secrets": { "type": "boolean" }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.auth.token.response.schema.json",
+  "title": "lp.auth.token.response@0.1.0",
+  "description": "Hosted x07 Platform token endpoint response for x07lp interactive login. Standard OAuth fields are preserved; x07 adds issuer/audience/subject/context summary fields for CLI session initialization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "token_type",
+    "access_token",
+    "expires_in",
+    "scope",
+    "issuer",
+    "audience",
+    "subject",
+    "session"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.auth.token.response@0.1.0" },
+    "token_type": { "const": "Bearer" },
+    "access_token": { "type": "string", "minLength": 1, "maxLength": 16384 },
+    "expires_in": { "type": "integer", "minimum": 60, "maximum": 86400 },
+    "refresh_token": {
+      "oneOf": [
+        { "type": "string", "minLength": 1, "maxLength": 4096 },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "refresh_expires_in": {
+      "oneOf": [
+        { "type": "integer", "minimum": 60, "maximum": 31536000 },
+        { "type": "null" }
+      ],
+      "default": null
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+( [A-Za-z0-9._:-]+)*$"
+    },
+    "issuer": { "type": "string", "format": "uri" },
+    "audience": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_id", "subject_kind"],
+      "properties": {
+        "subject_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "subject_kind": {
+          "type": "string",
+          "enum": ["human", "service_account"]
+        }
+      }
+    },
+    "default_context": {
+      "type": ["object", "null"],
+      "default": null,
+      "additionalProperties": false,
+      "required": ["org_id", "project_id", "plan"],
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "plan": {
+          "type": "string",
+          "enum": ["free", "trial", "paid", "enterprise"]
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id"],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.remote.capabilities.response.schema.json",
+  "title": "lp.remote.capabilities.response@0.1.0",
+  "description": "Schema for GET /v1/capabilities responses returned by x07lpd in D-OSS.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "api_version",
+    "generated_unix_ms",
+    "server_id",
+    "runtime_provider",
+    "routing_provider",
+    "telemetry_provider",
+    "secrets_provider",
+    "component_registry",
+    "artifact_distribution",
+    "accepted_artifact_kinds",
+    "supported_schema_ids",
+    "supported_deploy_plan_versions",
+    "features",
+    "limits",
+    "auth",
+    "capabilities_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.remote.capabilities.response@0.1.0"
+    },
+    "api_version": {
+      "const": "v1"
+    },
+    "generated_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "server_id": {
+      "$ref": "#/$defs/id"
+    },
+    "runtime_provider": {
+      "const": "lp.impl.runtime.wasmcloud_v1"
+    },
+    "routing_provider": {
+      "const": "lp.impl.routing.edge_http_v1"
+    },
+    "telemetry_provider": {
+      "const": "lp.impl.telemetry.otlp_http_v1"
+    },
+    "secrets_provider": {
+      "const": "lp.impl.secrets.server_store_v1"
+    },
+    "component_registry": {
+      "const": "lp.impl.component_registry.oci_v1"
+    },
+    "artifact_distribution": {
+      "const": "oci"
+    },
+    "accepted_artifact_kinds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "enum": [
+          "x07.app.pack@0.1.0"
+        ]
+      },
+      "contains": {
+        "const": "x07.app.pack@0.1.0"
+      }
+    },
+    "supported_schema_ids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+      }
+    },
+    "supported_deploy_plan_versions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "enum": [
+          "x07.deploy.plan@0.2.0"
+        ]
+      },
+      "contains": {
+        "const": "x07.deploy.plan@0.2.0"
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "incidents",
+        "regressions",
+        "pause",
+        "rerun",
+        "weighted_canary",
+        "otlp",
+        "server_side_secrets",
+        "event_stream",
+        "signed_control_actions"
+      ],
+      "properties": {
+        "incidents": {
+          "type": "boolean"
+        },
+        "regressions": {
+          "type": "boolean"
+        },
+        "pause": {
+          "type": "boolean"
+        },
+        "rerun": {
+          "type": "boolean"
+        },
+        "weighted_canary": {
+          "type": "boolean"
+        },
+        "otlp": {
+          "type": "boolean"
+        },
+        "server_side_secrets": {
+          "type": "boolean"
+        },
+        "event_stream": {
+          "type": "boolean"
+        },
+        "signed_control_actions": {
+          "type": "boolean"
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_blob_bytes",
+        "max_parallel_uploads",
+        "max_presence_batch",
+        "max_query_limit"
+      ],
+      "properties": {
+        "max_blob_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_parallel_uploads": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "max_presence_batch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65536
+        },
+        "max_query_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme",
+        "token_kind",
+        "required_scopes"
+      ],
+      "properties": {
+        "scheme": {
+          "const": "bearer"
+        },
+        "token_kind": {
+          "const": "opaque"
+        },
+        "required_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "string",
+            "enum": [
+              "lp.artifacts.read",
+              "lp.artifacts.write",
+              "lp.deploy.read",
+              "lp.deploy.write",
+              "lp.incident.read",
+              "lp.incident.write",
+              "lp.regression.write",
+              "lp.adapter.read"
+            ]
+          }
+        }
+      }
+    },
+    "capabilities_digest": {
+      "$ref": "#/$defs/digest_ref"
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bytes_len": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "environment_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+    },
+    "digest_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "bytes_len"
+      ],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes_len": {
+          "$ref": "#/$defs/bytes_len"
+        }
+      }
+    },
+    "artifact_ref_min": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_ref"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "app_id",
+        "environment"
+      ],
+      "properties": {
+        "app_id": {
+          "$ref": "#/$defs/id"
+        },
+        "environment": {
+          "$ref": "#/$defs/environment_key"
+        }
+      }
+    },
+    "analysis_decision": {
+      "type": "string",
+      "enum": [
+        "none",
+        "promote",
+        "rollback",
+        "inconclusive"
+      ]
+    },
+    "route_algorithm": {
+      "type": "string",
+      "enum": [
+        "hash_bucket_v1"
+      ]
+    },
+    "route_key_header": {
+      "type": "string",
+      "enum": [
+        "X-LP-Route-Key"
+      ]
+    },
+    "runtime_slot_status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "started",
+        "healthy",
+        "stopped",
+        "failed"
+      ]
+    },
+    "exec_outcome": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "promoted",
+        "rolled_back",
+        "aborted",
+        "failed"
+      ]
+    }
+  }
+}

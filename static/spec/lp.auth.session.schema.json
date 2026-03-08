@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.auth.session.schema.json",
+  "title": "lp.auth.session@0.1.0",
+  "description": "Local hosted-session materialization for x07lp. Intended for ~/.config/x07lp/session.json. The refresh token may be omitted when stored in an OS keychain; in that case refresh_token_ref is used.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "issuer",
+    "auth_metadata_url",
+    "jwks_uri",
+    "target",
+    "account",
+    "default_context",
+    "tokens",
+    "created_unix_ms",
+    "updated_unix_ms"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.auth.session@0.1.0" },
+    "issuer": { "type": "string", "format": "uri" },
+    "auth_metadata_url": { "type": "string", "format": "uri" },
+    "jwks_uri": { "type": "string", "format": "uri" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "api_base", "audience"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+        },
+        "api_base": { "type": "string", "format": "uri" },
+        "audience": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    },
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account_id", "subject_kind"],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "subject_kind": { "type": "string", "enum": ["human", "service_account"] },
+        "email": { "type": "string", "format": "email" },
+        "display_name": { "type": "string", "maxLength": 256 },
+        "plan": { "type": "string", "enum": ["free", "trial", "paid", "enterprise"] }
+      }
+    },
+    "default_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["org_id", "project_id"],
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "org_slug": { "type": "string", "maxLength": 128 },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "project_slug": { "type": "string", "maxLength": 128 }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["token_type", "access_token", "access_token_expires_unix_ms", "scope"],
+      "properties": {
+        "token_type": { "const": "Bearer" },
+        "access_token": { "type": "string", "minLength": 1, "maxLength": 16384 },
+        "access_token_expires_unix_ms": { "type": "integer", "minimum": 0 },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "kid": { "type": "string", "maxLength": 256 },
+        "refresh_token": {
+          "oneOf": [
+            { "type": "string", "minLength": 1, "maxLength": 4096 },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "refresh_token_ref": {
+          "oneOf": [
+            { "type": "string", "minLength": 1, "maxLength": 2048 },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "refresh_token_expires_unix_ms": {
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "null" }
+          ],
+          "default": null
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "refresh_token": { "type": "null" },
+              "refresh_token_ref": { "type": "null" }
+            }
+          },
+          "then": false
+        }
+      ]
+    },
+    "created_unix_ms": { "type": "integer", "minimum": 0 },
+    "updated_unix_ms": { "type": "integer", "minimum": 0 }
+  }
+}
