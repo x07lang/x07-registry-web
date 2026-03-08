@@ -1,0 +1,8 @@
+{
+  "generated_by": "scripts/update_spec_mirror.ts",
+  "sources": [
+    "x07",
+    "x07-wasm-backend",
+    "x07-platform-contracts"
+  ]
+}

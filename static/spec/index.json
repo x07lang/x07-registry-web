@@ -105,6 +105,14 @@
       "path": "lp.remote.capabilities.response.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.remote.events.result.schema.json",
+      "path": "lp.remote.events.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.remote.logs.result.schema.json",
+      "path": "lp.remote.logs.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.target.list.result.schema.json",
       "path": "lp.target.list.result.schema.json"
     },
@@ -115,6 +123,14 @@
     {
       "id": "https://x07.io/spec/x07-agent.context.schema.json",
       "path": "x07-agent.context.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-app.backend.request.schema.json",
+      "path": "x07-app.backend.request.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-app.backend.response.schema.json",
+      "path": "x07-app.backend.response.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-app.bundle.schema.json",
@@ -289,6 +305,10 @@
       "path": "x07-arch.wasm.toolchain.index.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
+      "path": "x07-arch.web_ui.index.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-arch.web.api.schema.json",
       "path": "x07-arch.web.api.schema.json"
     },
@@ -299,10 +319,6 @@
     {
       "id": "https://x07.io/spec/x07-arch.web.openapi_profile.schema.json",
       "path": "x07-arch.web.openapi_profile.schema.json"
-    },
-    {
-      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
-      "path": "x07-arch.web_ui.index.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-arch.wit.index.schema.json",
@@ -369,6 +385,14 @@
       "path": "x07-doc.report.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-guest.failure.schema.json",
+      "path": "x07-guest.failure.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-guest.request.schema.json",
+      "path": "x07-guest.request.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-host-runner.report.schema.json",
       "path": "x07-host-runner.report.schema.json"
     },
@@ -405,6 +429,14 @@
       "path": "x07-lock.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-lock.v0.2.0.schema.json",
+      "path": "x07-lock.v0.2.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-lock.v0.3.0.schema.json",
+      "path": "x07-lock.v0.3.0.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-mem.provenance-graph.schema.json",
       "path": "x07-mem.provenance-graph.schema.json"
     },
@@ -433,6 +465,10 @@
       "path": "x07-package.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-pkg.advisory.schema.json",
+      "path": "x07-pkg.advisory.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-policy-init.report.schema.json",
       "path": "x07-policy-init.report.schema.json"
     },
@@ -443,6 +479,14 @@
     {
       "id": "https://x07.io/spec/x07-project.schema.json",
       "path": "x07-project.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-project.v0.2.0.schema.json",
+      "path": "x07-project.v0.2.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-project.v0.3.0.schema.json",
+      "path": "x07-project.v0.3.0.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-provenance.dsse.envelope.schema.json",
@@ -489,12 +533,32 @@
       "path": "x07-tool-arch.report.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-tool-assets-embed-dir.report.schema.json",
+      "path": "x07-tool-assets-embed-dir.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-assets.report.schema.json",
+      "path": "x07-tool-assets.report.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-tool-ast-apply-patch.report.schema.json",
       "path": "x07-tool-ast-apply-patch.report.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-tool-ast-canon.report.schema.json",
       "path": "x07-tool-ast-canon.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-ast-edit-apply-quickfix.report.schema.json",
+      "path": "x07-tool-ast-edit-apply-quickfix.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-ast-edit-insert-stmts.report.schema.json",
+      "path": "x07-tool-ast-edit-insert-stmts.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-ast-edit.report.schema.json",
+      "path": "x07-tool-ast-edit.report.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-tool-ast-get.report.schema.json",
@@ -741,6 +805,10 @@
       "path": "x07-tool-verify.report.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-tool-wasm.report.schema.json",
+      "path": "x07-tool-wasm.report.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-tool.events.schema.json",
       "path": "x07-tool.events.schema.json"
     },
@@ -759,6 +827,10 @@
     {
       "id": "https://x07.io/spec/x07-verify.report.schema.json",
       "path": "x07-verify.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-vm.bundle.manifest.schema.json",
+      "path": "x07-vm.bundle.manifest.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-wasm.app.build.report.schema.json",

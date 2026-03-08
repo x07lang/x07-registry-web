@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://x07.io/spec/x07-project.schema.json",
+  "$id": "https://x07.io/spec/x07-project.v0.3.0.schema.json",
   "title": "x07.project@0.3.0",
   "description": "Project manifest (x07.json). Core fields are consumed by the compiler (x07c). Run profiles are consumed by x07 run.",
   "type": "object",

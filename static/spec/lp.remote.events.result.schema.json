@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.remote.events.result.schema.json",
+  "title": "lp.remote.events.result@0.1.0",
+  "description": "Cursor-based remote event stream returned by x07lpd.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "items", "cursor", "next_cursor"],
+  "properties": {
+    "schema_version": { "const": "lp.remote.events.result@0.1.0" },
+    "exec_id": {
+      "anyOf": [
+        { "type": "string", "minLength": 1, "maxLength": 128 },
+        { "type": "null" }
+      ]
+    },
+    "slot": {
+      "anyOf": [
+        { "type": "string", "enum": ["stable", "candidate"] },
+        { "type": "null" }
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event_item" }
+    },
+    "cursor": {
+      "anyOf": [
+        { "type": "string", "minLength": 1, "maxLength": 256 },
+        { "type": "null" }
+      ]
+    },
+    "next_cursor": {
+      "anyOf": [
+        { "type": "string", "minLength": 1, "maxLength": 256 },
+        { "type": "null" }
+      ]
+    }
+  },
+  "$defs": {
+    "event_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "kind", "exec_id", "run_id", "slot", "emitted_unix_ms", "data"],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "exec_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "run_id": {
+          "anyOf": [
+            { "type": "string", "minLength": 1, "maxLength": 128 },
+            { "type": "null" }
+          ]
+        },
+        "slot": {
+          "anyOf": [
+            { "type": "string", "enum": ["stable", "candidate"] },
+            { "type": "null" }
+          ]
+        },
+        "emitted_unix_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
