@@ -59,6 +59,19 @@ async function collectSource(sourceName: string, dir: string): Promise<{ entries
   return { entries, files };
 }
 
+async function collectLocalPlatformSlice(sourceName: string, dir: string): Promise<{ entries: SchemaEntry[]; files: string[] }> {
+  const s = await stat(dir).catch(() => null);
+  if (!s || !s.isDirectory()) {
+    throw new Error(`missing fallback source directory: ${dir}`);
+  }
+  const files = (await listSchemaFiles(dir)).filter((file) => path.basename(file).startsWith('lp.'));
+  const entries: SchemaEntry[] = [];
+  for (const file of files) {
+    entries.push({ id: await schemaId(file), path: path.basename(file), source: sourceName, file });
+  }
+  return { entries, files };
+}
+
 async function buildExpected(tmpOut: string, entries: SchemaEntry[]) {
   await mkdir(tmpOut, { recursive: true });
   for (const entry of entries) {
@@ -107,10 +120,14 @@ async function compareDir(expectedDir: string, actualDir: string): Promise<boole
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const outDir = String(args.out ?? process.env.X07_REGISTRY_WEB_SPEC_OUT_DIR ?? path.join(repoRoot, 'static/spec'));
+  const platformContractsDir = String(
+    args['x07-platform-contracts-dir'] ??
+      process.env.X07_PLATFORM_CONTRACTS_SPEC_DIR ??
+      path.join(repoRoot, '_deps/x07-platform-contracts/spec/schemas'),
+  );
   const sourceMap = {
     x07: String(args['x07-dir'] ?? process.env.X07_SPEC_DIR ?? path.join(repoRoot, '_deps/x07/docs/spec/schemas')),
     'x07-wasm-backend': String(args['x07-wasm-dir'] ?? process.env.X07_WASM_SPEC_DIR ?? path.join(repoRoot, '_deps/x07-wasm-backend/crates/x07-wasm/spec/schemas')),
-    'x07-platform-contracts': String(args['x07-platform-contracts-dir'] ?? process.env.X07_PLATFORM_CONTRACTS_SPEC_DIR ?? path.join(repoRoot, '_deps/x07-platform-contracts/spec/schemas')),
   };
 
   const allEntries: SchemaEntry[] = [];
@@ -138,6 +155,29 @@ async function main() {
       names.set(entry.path, entry);
       allEntries.push(entry);
     }
+  }
+
+  const platformSource = (await stat(platformContractsDir).catch(() => null))
+    ? await collectSource('x07-platform-contracts', platformContractsDir)
+    : await collectLocalPlatformSlice('x07-platform-contracts', outDir);
+  for (const entry of platformSource.entries) {
+    const seenById = ids.get(entry.id);
+    if (seenById) {
+      if (seenById.path === entry.path && (await sameFile(seenById.file, entry.file))) {
+        continue;
+      }
+      throw new Error(`duplicate schema id ${entry.id} from x07-platform-contracts; already seen in ${seenById.source}`);
+    }
+    const seenByName = names.get(entry.path);
+    if (seenByName) {
+      if (seenByName.id === entry.id && (await sameFile(seenByName.file, entry.file))) {
+        continue;
+      }
+      throw new Error(`duplicate schema filename ${entry.path} from x07-platform-contracts; already seen in ${seenByName.source}`);
+    }
+    ids.set(entry.id, entry);
+    names.set(entry.path, entry);
+    allEntries.push(entry);
   }
 
   const tempRoot = await mkdtemp(path.join(tmpdir(), 'x07-registry-web-spec-'));
