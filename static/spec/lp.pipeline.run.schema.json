@@ -121,6 +121,10 @@
         "x07_wasm_ops_validate",
         "decision_intake",
         "deploy_plan_execute",
+        "device_release_validate",
+        "device_release_execute",
+        "device_release_control",
+        "device_release_provider_call",
         "incident_capture",
         "regression_generate"
       ],
@@ -203,6 +207,24 @@
               }
             },
             "bundle_id": { "$ref": "#/$defs/id" },
+            "label": { "type": "string", "maxLength": 256 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "manifest"],
+          "properties": {
+            "kind": { "const": "x07.device.package.manifest@0.1.0" },
+            "manifest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "digest"],
+              "properties": {
+                "kind": { "const": "x07.device.package.manifest@0.1.0" },
+                "digest": { "$ref": "#/$defs/digest_ref" }
+              }
+            },
             "label": { "type": "string", "maxLength": 256 }
           }
         }

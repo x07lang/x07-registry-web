@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.control.action.result.schema.json",
   "title": "lp.control.action.result@0.1.0",
-  "description": "Result object for manual control-plane actions: deploy pause/rerun/stop/rollback and app/platform kill or clear-kill operations.",
+  "description": "Result object for manual control-plane actions: deploy or device-release controls plus app/platform kill or clear-kill operations.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -34,6 +34,11 @@
         "deploy.rerun.manual",
         "deploy.stop.manual",
         "deploy.rollback.manual",
+        "device.release.pause.manual",
+        "device.release.resume.manual",
+        "device.release.halt.manual",
+        "device.release.complete.manual",
+        "device.release.rollback.manual",
         "app.kill",
         "app.unkill",
         "platform.kill",
@@ -44,6 +49,7 @@
       "type": "string",
       "enum": [
         "deployment",
+        "device_release",
         "app",
         "platform"
       ]
@@ -71,6 +77,12 @@
       "additionalProperties": false,
       "properties": {
         "deployment_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "release_exec_id": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,

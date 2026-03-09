@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.device.store.provider.profile.schema.json",
+  "title": "lp.device.store.provider.profile@0.1.0",
+  "description": "Provider profile for a single device-store release target.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "provider_id",
+    "provider_kind",
+    "distribution_lane",
+    "target",
+    "credentials_ref",
+    "app_ref",
+    "policy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.device.store.provider.profile@0.1.0"
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "provider_kind": {
+      "type": "string",
+      "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "distribution_lane": {
+      "type": "string",
+      "enum": ["beta", "production"]
+    },
+    "target": {
+      "type": "string",
+      "enum": ["ios", "android"]
+    },
+    "credentials_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "app_ref": {
+      "type": "object",
+      "additionalProperties": true,
+      "minProperties": 1
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": true,
+      "minProperties": 1
+    },
+    "track": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "rollout_defaults": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    },
+    "provider_options": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.device.release.run.result.schema.json",
+  "title": "lp.device.release.run.result@0.1.0",
+  "description": "Result shape embedded in lp.cli.report.result for x07lp device release run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "exec_id",
+    "plan_id",
+    "provider_kind",
+    "target",
+    "status",
+    "decision_count",
+    "execution"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.device.release.run.result@0.1.0"
+    },
+    "exec_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "plan_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "provider_kind": {
+      "type": "string",
+      "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "target": {
+      "type": "string",
+      "enum": ["ios", "android"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["planned", "started", "completed", "failed", "aborted"]
+    },
+    "decision_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "digest"],
+      "properties": {
+        "kind": { "const": "lp.device.release.execution@0.1.0" },
+        "digest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha256", "bytes_len"],
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "bytes_len": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    }
+  }
+}

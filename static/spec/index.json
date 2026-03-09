@@ -69,6 +69,26 @@
       "path": "lp.deploy.remote.result.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.device.release.execution.schema.json",
+      "path": "lp.device.release.execution.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.device.release.plan.schema.json",
+      "path": "lp.device.release.plan.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.device.release.query.result.schema.json",
+      "path": "lp.device.release.query.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.device.release.run.result.schema.json",
+      "path": "lp.device.release.run.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.device.store.provider.profile.schema.json",
+      "path": "lp.device.store.provider.profile.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.incident.bundle.meta.local.schema.json",
       "path": "lp.incident.bundle.meta.local.schema.json"
     },
@@ -365,12 +385,20 @@
       "path": "x07-device.bundle.manifest.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-device.capabilities.schema.json",
+      "path": "x07-device.capabilities.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-device.package.manifest.schema.json",
       "path": "x07-device.package.manifest.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-device.profile.schema.json",
       "path": "x07-device.profile.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-device.telemetry.profile.schema.json",
+      "path": "x07-device.telemetry.profile.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-diag.catalog.schema.json",

@@ -31,6 +31,64 @@
     "supports_rerun": { "type": "boolean" },
     "supports_weighted_canary": { "type": "boolean" },
     "supports_otlp": { "type": "boolean" },
-    "supports_server_side_secrets": { "type": "boolean" }
+    "supports_server_side_secrets": { "type": "boolean" },
+    "device_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported_targets",
+        "supported_distribution_lanes",
+        "supported_ops",
+        "supports_percent_rollout",
+        "supports_release_pause",
+        "supports_release_resume",
+        "supports_release_complete",
+        "supports_release_rollback"
+      ],
+      "properties": {
+        "supported_targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["ios", "android"]
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "supported_distribution_lanes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["beta", "production"]
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "supported_ops": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "release.start",
+              "rollout.set_percent",
+              "release.pause",
+              "release.resume",
+              "release.complete",
+              "rollback.previous"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "supports_percent_rollout": { "type": "boolean" },
+        "supports_release_pause": { "type": "boolean" },
+        "supports_release_resume": { "type": "boolean" },
+        "supports_release_complete": { "type": "boolean" },
+        "supports_release_rollback": { "type": "boolean" }
+      }
+    }
   }
 }

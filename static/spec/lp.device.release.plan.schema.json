@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.device.release.plan.schema.json",
+  "title": "lp.device.release.plan@0.1.0",
+  "description": "Deterministic rollout plan for releasing a sealed device package through a single store/provider target.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "created_unix_ms",
+    "provider_profile",
+    "target",
+    "app",
+    "package",
+    "strategy",
+    "steps"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.device.release.plan@0.1.0" },
+    "plan_id": { "$ref": "#/$defs/id" },
+    "created_unix_ms": { "$ref": "#/$defs/unix_ms" },
+    "provider_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "digest"],
+      "properties": {
+        "kind": { "const": "lp.device.store.provider.profile@0.1.0" },
+        "digest": { "$ref": "#/$defs/digest_ref" },
+        "provider_id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "target": {
+      "type": "string",
+      "enum": ["ios", "android"]
+    },
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["app_id", "track_or_lane", "version", "build"],
+      "properties": {
+        "app_id": { "$ref": "#/$defs/id" },
+        "track_or_lane": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "build": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "digest"],
+      "properties": {
+        "kind": { "const": "x07.device.package.manifest@0.1.0" },
+        "digest": { "$ref": "#/$defs/digest_ref" },
+        "label": { "type": "string", "maxLength": 256 }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_auto_steps", "max_total_wait_seconds", "on_provider_error"],
+      "properties": {
+        "max_auto_steps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "max_total_wait_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31536000
+        },
+        "on_provider_error": {
+          "type": "string",
+          "enum": ["fail", "pause", "require_human"]
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4096,
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "digest_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "bytes_len"],
+      "properties": {
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes_len": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "step_on_fail": {
+      "type": "string",
+      "enum": ["fail", "pause", "require_human"]
+    },
+    "step_release_start": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "release.start" },
+        "on_fail": { "$ref": "#/$defs/step_on_fail" }
+      }
+    },
+    "step_rollout_set_percent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op", "percent"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "rollout.set_percent" },
+        "percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "on_fail": { "$ref": "#/$defs/step_on_fail" }
+      }
+    },
+    "step_release_pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "release.pause" },
+        "on_fail": { "$ref": "#/$defs/step_on_fail" }
+      }
+    },
+    "step_release_resume": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "release.resume" },
+        "on_fail": { "$ref": "#/$defs/step_on_fail" }
+      }
+    },
+    "step_release_complete": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "release.complete" },
+        "on_fail": { "$ref": "#/$defs/step_on_fail" }
+      }
+    },
+    "step_rollback_previous": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "rollback.previous" },
+        "on_fail": { "$ref": "#/$defs/step_on_fail" }
+      }
+    },
+    "step": {
+      "oneOf": [
+        { "$ref": "#/$defs/step_release_start" },
+        { "$ref": "#/$defs/step_rollout_set_percent" },
+        { "$ref": "#/$defs/step_release_pause" },
+        { "$ref": "#/$defs/step_release_resume" },
+        { "$ref": "#/$defs/step_release_complete" },
+        { "$ref": "#/$defs/step_rollback_previous" }
+      ]
+    }
+  }
+}
