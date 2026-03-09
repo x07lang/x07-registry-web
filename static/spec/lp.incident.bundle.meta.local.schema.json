@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.incident.bundle.meta.local.schema.json",
   "title": "lp.incident.bundle.meta.local@0.1.0",
-  "description": "Local companion schema for the meta object stored with lp.incident.bundle@0.1.0 and for the materialized incident.meta.local.json file in Phase C.",
+  "description": "Local companion schema for the meta object stored with lp.incident.bundle@0.1.0 and for the materialized incident.meta.local.json file.",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -105,6 +105,8 @@
         "weighted_canary",
         "otlp",
         "server_side_secrets",
+        "authenticated_oci_push",
+        "registry_tls",
         "event_stream",
         "signed_control_actions"
       ],
@@ -128,6 +130,12 @@
           "type": "boolean"
         },
         "server_side_secrets": {
+          "type": "boolean"
+        },
+        "authenticated_oci_push": {
+          "type": "boolean"
+        },
+        "registry_tls": {
           "type": "boolean"
         },
         "event_stream": {

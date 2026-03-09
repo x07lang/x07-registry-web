@@ -19,7 +19,12 @@
     "schema_version": { "const": "lp.target.profile@0.1.0" },
     "name": { "$ref": "#/$defs/name" },
     "kind": { "const": "oss_remote" },
-    "base_url": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "base_url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^(https://.+|http://(?:127\\.0\\.0\\.1|localhost)(?::[0-9]{1,5})?(?:/.*)?)$"
+    },
     "api_version": { "const": "v1" },
     "auth": {
       "type": "object",
@@ -43,12 +48,101 @@
     "runtime_provider": { "type": "string", "minLength": 1, "maxLength": 128 },
     "routing_provider": { "type": "string", "minLength": 1, "maxLength": 128 },
     "oci_registry": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "oci_auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "username_ref", "password_ref"],
+      "properties": {
+        "kind": { "const": "basic" },
+        "username_ref": { "type": "string", "minLength": 1, "maxLength": 4096 },
+        "password_ref": { "type": "string", "minLength": 1, "maxLength": 4096 }
+      }
+    },
+    "oci_tls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["system", "ca_bundle"] },
+        "ca_bundle_path": { "type": "string", "minLength": 1, "maxLength": 4096 }
+      }
+    },
     "lattice_id": { "type": "string", "minLength": 1, "maxLength": 128 },
     "default_namespace": { "type": "string", "minLength": 1, "maxLength": 128 },
     "default_env": { "type": "string", "minLength": 1, "maxLength": 128 },
     "telemetry_collector_hint": { "type": "string", "minLength": 1, "maxLength": 2048 },
     "expect_capabilities_digest": { "$ref": "#/$defs/sha256_prefixed" }
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["tls"],
+        "properties": {
+          "tls": {
+            "required": ["mode"],
+            "properties": {
+              "mode": { "const": "ca_bundle" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tls": {
+            "required": ["mode", "ca_bundle_path"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["tls"],
+        "properties": {
+          "tls": {
+            "required": ["mode"],
+            "properties": {
+              "mode": { "const": "pinned_spki" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tls": {
+            "required": ["mode", "pinned_spki_sha256"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["oci_registry"]
+      },
+      "then": {
+        "required": ["oci_auth", "oci_tls"]
+      }
+    },
+    {
+      "if": {
+        "required": ["oci_tls"],
+        "properties": {
+          "oci_tls": {
+            "required": ["mode"],
+            "properties": {
+              "mode": { "const": "ca_bundle" }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "oci_tls": {
+            "required": ["mode", "ca_bundle_path"]
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "name": {
       "type": "string",

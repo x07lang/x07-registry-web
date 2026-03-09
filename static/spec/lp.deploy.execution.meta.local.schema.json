@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.deploy.execution.meta.local.schema.json",
   "title": "lp.deploy.execution.meta.local@0.1.0",
-  "description": "Structured companion schema for the local deployment metadata stored in lp.deploy.execution@0.1.0.meta. Phase C extends the Phase B shape without changing the parent artifact version.",
+  "description": "Structured companion schema for the local deployment metadata stored in lp.deploy.execution@0.1.0.meta. It extends the original local metadata shape without changing the parent artifact version.",
   "type": "object",
   "additionalProperties": false,
   "required": [

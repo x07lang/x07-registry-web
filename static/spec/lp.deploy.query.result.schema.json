@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.deploy.query.result.schema.json",
   "title": "lp.deploy.query.result@0.1.0",
-  "description": "Result object for x07lp deploy query and the corresponding MCP/UI surfaces. Phase C extends the Phase B query contract with control-state, kill, incident, and signature fields.",
+  "description": "Result object for x07lp deploy query and the corresponding MCP/UI surfaces. It includes control-state, kill, incident, and signature fields alongside the deploy summary.",
   "type": "object",
   "additionalProperties": false,
   "required": [

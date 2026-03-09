@@ -59,19 +59,6 @@ async function collectSource(sourceName: string, dir: string): Promise<{ entries
   return { entries, files };
 }
 
-async function collectLocalPlatformSlice(sourceName: string, dir: string): Promise<{ entries: SchemaEntry[]; files: string[] }> {
-  const s = await stat(dir).catch(() => null);
-  if (!s || !s.isDirectory()) {
-    throw new Error(`missing fallback source directory: ${dir}`);
-  }
-  const files = (await listSchemaFiles(dir)).filter((file) => path.basename(file).startsWith('lp.'));
-  const entries: SchemaEntry[] = [];
-  for (const file of files) {
-    entries.push({ id: await schemaId(file), path: path.basename(file), source: sourceName, file });
-  }
-  return { entries, files };
-}
-
 async function buildExpected(tmpOut: string, entries: SchemaEntry[]) {
   await mkdir(tmpOut, { recursive: true });
   for (const entry of entries) {
@@ -157,9 +144,7 @@ async function main() {
     }
   }
 
-  const platformSource = (await stat(platformContractsDir).catch(() => null))
-    ? await collectSource('x07-platform-contracts', platformContractsDir)
-    : await collectLocalPlatformSlice('x07-platform-contracts', outDir);
+  const platformSource = await collectSource('x07-platform-contracts', platformContractsDir);
   for (const entry of platformSource.entries) {
     const seenById = ids.get(entry.id);
     if (seenById) {
@@ -187,7 +172,9 @@ async function main() {
   if (args.check) {
     const ok = await compareDir(expectedDir, outDir);
     if (!ok) {
-      console.error('run: npm exec --yes --package tsx -- tsx scripts/update_spec_mirror.ts');
+      console.error(
+        'run: npm exec --yes --package tsx -- tsx scripts/update_spec_mirror.ts --x07-platform-contracts-dir <path-to-x07-platform-contracts/spec/schemas>',
+      );
       process.exit(1);
     }
     console.log('ok: registry-web spec mirror');

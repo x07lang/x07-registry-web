@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.deploy.execution.meta.remote.schema.json",
   "title": "lp.deploy.execution.meta.remote@0.1.0",
-  "description": "Remote companion schema for lp.deploy.execution@0.1.0 in D-OSS. It preserves the Phase B/C deploy execution semantics while carrying remote-target, publish, provider, and lease state.",
+  "description": "Remote companion schema for lp.deploy.execution@0.1.0. It preserves the local deploy execution semantics while carrying remote-target, publish, provider, and lease state.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -64,6 +64,33 @@
         "auth_kind": {
           "const": "static_bearer"
         },
+        "tls": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mode"],
+              "properties": {
+                "mode": {
+                  "enum": ["system", "ca_bundle", "pinned_spki"]
+                },
+                "ca_bundle_path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "pinned_spki_sha256": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-fA-F]{64}$"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "runtime_provider": {
           "const": "lp.impl.runtime.wasmcloud_v1"
         },
@@ -75,6 +102,57 @@
             {
               "type": "string",
               "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "oci_auth": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "username_ref", "password_ref"],
+              "properties": {
+                "kind": {
+                  "const": "basic"
+                },
+                "username_ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "password_ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "oci_tls": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mode"],
+              "properties": {
+                "mode": {
+                  "enum": ["system", "ca_bundle"]
+                },
+                "ca_bundle_path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              }
             },
             {
               "type": "null"
@@ -98,6 +176,32 @@
           "oneOf": [
             {
               "$ref": "#/$defs/environment_key"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lattice_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "telemetry_collector_hint": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
             },
             {
               "type": "null"

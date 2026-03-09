@@ -43,7 +43,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "const": "x07-wasm"
+          "const": "x07 wasm"
         },
         "command": {
           "type": "string",
