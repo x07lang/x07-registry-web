@@ -74,7 +74,7 @@
           "additionalProperties": false,
           "required": ["kind", "digest"],
           "properties": {
-            "kind": { "enum": ["x07.app.pack@0.1.0", "x07.vm.bundle.manifest@0.2.0"] },
+            "kind": { "enum": ["x07.app.pack@0.1.0", "x07.vm.bundle.manifest@0.2.0", "x07.device.package.manifest@0.1.0"] },
             "digest": { "$ref": "#/$defs/digest_ref" }
           }
         }

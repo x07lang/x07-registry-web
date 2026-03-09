@@ -22,10 +22,7 @@
       "const": "lp.control.action.result@0.1.0"
     },
     "action_id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+      "$ref": "#/$defs/id"
     },
     "kind": {
       "type": "string",
@@ -39,6 +36,9 @@
         "device.release.halt.manual",
         "device.release.complete.manual",
         "device.release.rollback.manual",
+        "device.release.observe.manual",
+        "device.release.stop.manual",
+        "device.release.rerun.manual",
         "app.kill",
         "app.unkill",
         "platform.kill",
@@ -67,32 +67,20 @@
       ]
     },
     "created_unix_ms": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 9007199254740991,
-      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+      "$ref": "#/$defs/unix_ms"
     },
     "target": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "deployment_id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          "$ref": "#/$defs/id"
         },
         "release_exec_id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          "$ref": "#/$defs/id"
         },
         "app_id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          "$ref": "#/$defs/id"
         },
         "environment": {
           "type": "string",
@@ -110,20 +98,14 @@
     "affected_executions": {
       "type": "array",
       "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 128,
-        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        "$ref": "#/$defs/id"
       },
       "default": []
     },
     "new_execution_id": {
       "oneOf": [
         {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+          "$ref": "#/$defs/id"
         },
         {
           "type": "null"
@@ -134,47 +116,10 @@
     "state_before": {
       "oneOf": [
         {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "status",
-            "control_state",
-            "kill_scope",
-            "kill_latched"
-          ],
-          "properties": {
-            "status": {
-              "type": "string",
-              "enum": [
-                "planned",
-                "started",
-                "completed",
-                "failed",
-                "aborted"
-              ]
-            },
-            "control_state": {
-              "type": "string",
-              "enum": [
-                "active",
-                "paused",
-                "stopping",
-                "killed",
-                "terminal"
-              ]
-            },
-            "kill_scope": {
-              "type": "string",
-              "enum": [
-                "none",
-                "app",
-                "platform"
-              ]
-            },
-            "kill_latched": {
-              "type": "boolean"
-            }
-          }
+          "$ref": "#/$defs/deploy_state"
+        },
+        {
+          "$ref": "#/$defs/device_release_state"
         },
         {
           "type": "null"
@@ -185,47 +130,10 @@
     "state_after": {
       "oneOf": [
         {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "status",
-            "control_state",
-            "kill_scope",
-            "kill_latched"
-          ],
-          "properties": {
-            "status": {
-              "type": "string",
-              "enum": [
-                "planned",
-                "started",
-                "completed",
-                "failed",
-                "aborted"
-              ]
-            },
-            "control_state": {
-              "type": "string",
-              "enum": [
-                "active",
-                "paused",
-                "stopping",
-                "killed",
-                "terminal"
-              ]
-            },
-            "kill_scope": {
-              "type": "string",
-              "enum": [
-                "none",
-                "app",
-                "platform"
-              ]
-            },
-            "kill_latched": {
-              "type": "boolean"
-            }
-          }
+          "$ref": "#/$defs/deploy_state"
+        },
+        {
+          "$ref": "#/$defs/device_release_state"
         },
         {
           "type": "null"
@@ -244,10 +152,7 @@
         "decision_id": {
           "oneOf": [
             {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 128,
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+              "$ref": "#/$defs/id"
             },
             {
               "type": "null"
@@ -267,53 +172,7 @@
         "record": {
           "oneOf": [
             {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "digest"
-              ],
-              "properties": {
-                "kind": {
-                  "type": "string",
-                  "minLength": 3,
-                  "maxLength": 128,
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
-                },
-                "digest": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "sha256",
-                    "bytes_len"
-                  ],
-                  "properties": {
-                    "sha256": {
-                      "type": "string",
-                      "pattern": "^[0-9a-f]{64}$"
-                    },
-                    "bytes_len": {
-                      "type": "integer",
-                      "minimum": 0
-                    }
-                  }
-                },
-                "label": {
-                  "type": "string",
-                  "maxLength": 256
-                },
-                "store_uri": {
-                  "type": "string",
-                  "maxLength": 2048
-                },
-                "media_type": {
-                  "type": "string",
-                  "maxLength": 256
-                },
-                "logical_name": {
-                  "type": "string",
-                  "maxLength": 256
-                }
-              }
+              "$ref": "#/$defs/artifact_ref"
             },
             {
               "type": "null"
@@ -322,10 +181,198 @@
           "default": null
         }
       }
-    },
-    "message": {
+    }
+  },
+  "$defs": {
+    "id": {
       "type": "string",
-      "maxLength": 2048
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "digest_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "bytes_len"
+      ],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes_len": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_ref"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "logical_name": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "deploy_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "control_state",
+        "kill_scope",
+        "kill_latched"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "started",
+            "completed",
+            "failed",
+            "aborted"
+          ]
+        },
+        "control_state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "paused",
+            "stopping",
+            "killed",
+            "terminal"
+          ]
+        },
+        "kill_scope": {
+          "type": "string",
+          "enum": [
+            "none",
+            "app",
+            "platform"
+          ]
+        },
+        "kill_latched": {
+          "type": "boolean"
+        }
+      }
+    },
+    "device_release_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "current_state",
+        "current_rollout_percent",
+        "latest_store_release_id",
+        "latest_eval_outcome"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "started",
+            "completed",
+            "failed",
+            "aborted"
+          ]
+        },
+        "automation_state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "stopped",
+            "terminal"
+          ],
+          "default": "active"
+        },
+        "current_state": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "review",
+            "available",
+            "in_progress",
+            "paused",
+            "halted",
+            "completed",
+            "rolled_back"
+          ]
+        },
+        "current_rollout_percent": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "latest_store_release_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "latest_eval_outcome": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "fail",
+            "inconclusive",
+            "none"
+          ]
+        }
+      }
     }
   }
 }

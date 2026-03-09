@@ -123,7 +123,21 @@
     },
     "step_on_fail": {
       "type": "string",
-      "enum": ["fail", "pause", "require_human"]
+      "enum": ["fail", "pause", "require_human", "release.pause", "release.halt"]
+    },
+    "metrics_eval_on_fail": {
+      "type": "string",
+      "enum": ["release.pause", "release.halt", "require_human"]
+    },
+    "slo_profile_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "digest"],
+      "properties": {
+        "kind": { "const": "x07.slo.profile@0.1.0" },
+        "digest": { "$ref": "#/$defs/digest_ref" },
+        "label": { "type": "string", "maxLength": 256 }
+      }
     },
     "step_release_start": {
       "type": "object",
@@ -170,6 +184,22 @@
         "on_fail": { "$ref": "#/$defs/step_on_fail" }
       }
     },
+    "step_metrics_eval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op", "window_seconds", "thresholds", "on_fail"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "op": { "const": "metrics.eval" },
+        "window_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31536000
+        },
+        "thresholds": { "$ref": "#/$defs/slo_profile_ref" },
+        "on_fail": { "$ref": "#/$defs/metrics_eval_on_fail" }
+      }
+    },
     "step_release_complete": {
       "type": "object",
       "additionalProperties": false,
@@ -196,6 +226,7 @@
         { "$ref": "#/$defs/step_rollout_set_percent" },
         { "$ref": "#/$defs/step_release_pause" },
         { "$ref": "#/$defs/step_release_resume" },
+        { "$ref": "#/$defs/step_metrics_eval" },
         { "$ref": "#/$defs/step_release_complete" },
         { "$ref": "#/$defs/step_rollback_previous" }
       ]

@@ -41,6 +41,9 @@
         "package_digest",
         "current_state",
         "current_rollout_percent",
+        "latest_metrics_snapshot",
+        "latest_slo_eval_report",
+        "latest_eval_outcome",
         "latest_store_release_id"
       ],
       "additionalProperties": true,
@@ -77,6 +80,43 @@
             { "type": "null" }
           ],
           "default": null
+        },
+        "latest_metrics_snapshot": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "digest"],
+              "properties": {
+                "kind": { "const": "x07.metrics.snapshot@0.1.0" },
+                "digest": { "$ref": "#/$defs/digest_ref" },
+                "label": { "type": "string", "maxLength": 256 }
+              }
+            },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "latest_slo_eval_report": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "digest"],
+              "properties": {
+                "kind": { "const": "x07.wasm.slo.eval.report@0.1.0" },
+                "digest": { "$ref": "#/$defs/digest_ref" },
+                "label": { "type": "string", "maxLength": 256 }
+              }
+            },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "latest_eval_outcome": {
+          "type": "string",
+          "enum": ["ok", "fail", "inconclusive", "none"],
+          "default": "none"
         },
         "latest_store_release_id": {
           "oneOf": [
