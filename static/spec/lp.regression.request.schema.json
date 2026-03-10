@@ -1,17 +1,32 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.regression.request.schema.json",
-  "title": "lp.regression.request@0.1.0",
-  "description": "Structured request to generate regression fixtures from an incident bundle and a target artifact.",
+  "title": "lp.regression.request@0.2.0",
+  "description": "Structured request to generate regression fixtures from an incident bundle and a target artifact, with optional native replay hints for device-native incidents.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "regression_id", "created_unix_ms", "incident", "target_artifact", "invariants"],
+  "required": [
+    "schema_version",
+    "regression_id",
+    "created_unix_ms",
+    "incident",
+    "target_artifact",
+    "invariants"
+  ],
   "properties": {
-    "schema_version": { "const": "lp.regression.request@0.1.0" },
+    "schema_version": { "const": "lp.regression.request@0.2.0" },
     "regression_id": { "$ref": "#/$defs/id" },
     "created_unix_ms": { "$ref": "#/$defs/unix_ms" },
     "incident": { "$ref": "#/$defs/incident_ref" },
     "target_artifact": { "$ref": "#/$defs/target_artifact" },
+    "replay_target_kind": {
+      "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+      "default": null
+    },
+    "native_replay_hints": {
+      "oneOf": [{ "$ref": "#/$defs/native_replay_hints" }, { "type": "null" }],
+      "default": null
+    },
     "invariants": {
       "type": "array",
       "minItems": 1,
@@ -58,27 +73,140 @@
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
       "description": "Identifier for a regression invariant (semantics defined by the regression generator)."
     },
+    "host_target_kind": {
+      "type": "string",
+      "enum": ["desktop", "ios", "android"]
+    },
+    "permission_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9._-]*$"
+    },
+    "permission_state": {
+      "type": "string",
+      "enum": ["granted", "denied", "prompt", "restricted", "unsupported"]
+    },
+    "prelude_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "lifecycle.foreground",
+            "lifecycle.background",
+            "lifecycle.resume",
+            "connectivity.online",
+            "connectivity.offline"
+          ]
+        },
+        "delay_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600000
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
+    "native_sequence_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["ok", "denied", "prompt", "restricted", "unsupported", "timeout", "error", "cancelled"]
+        },
+        "permission": { "$ref": "#/$defs/permission_id" },
+        "permission_state": { "$ref": "#/$defs/permission_state" },
+        "reason": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600000
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {}
+        }
+      }
+    },
+    "native_sequence_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "result"],
+      "properties": {
+        "request_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "event_class": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "op": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "result": { "$ref": "#/$defs/native_sequence_result" }
+      }
+    },
+    "native_replay_hints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host_target", "prelude", "native_sequence"],
+      "properties": {
+        "host_target": { "$ref": "#/$defs/host_target_kind" },
+        "prelude": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/prelude_step" },
+          "default": []
+        },
+        "native_sequence": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/native_sequence_step" },
+          "default": []
+        }
+      }
+    },
     "incident_ref": {
       "type": "object",
       "additionalProperties": false,
       "required": ["kind", "digest"],
       "properties": {
-        "kind": { "const": "lp.incident.bundle@0.1.0" },
+        "kind": { "const": "lp.incident.bundle@0.2.0" },
         "digest": { "$ref": "#/$defs/digest_ref" }
       }
     },
     "target_artifact": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["kind", "digest"],
-          "properties": {
-            "kind": { "enum": ["x07.app.pack@0.1.0", "x07.vm.bundle.manifest@0.2.0", "x07.device.package.manifest@0.1.0"] },
-            "digest": { "$ref": "#/$defs/digest_ref" }
-          }
-        }
-      ]
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "digest"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "x07.app.pack@0.1.0",
+            "x07.vm.bundle.manifest@0.2.0",
+            "x07.device.package.manifest@0.1.0"
+          ]
+        },
+        "digest": { "$ref": "#/$defs/digest_ref" }
+      }
     }
   }
 }

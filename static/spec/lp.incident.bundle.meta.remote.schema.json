@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.incident.bundle.meta.remote.schema.json",
-  "title": "lp.incident.bundle.meta.remote@0.1.0",
-  "description": "Remote companion schema for the meta object stored with lp.incident.bundle@0.1.0 and for the materialized incident.meta.remote.json file in D-OSS.",
+  "title": "lp.incident.bundle.meta.remote@0.2.0",
+  "description": "Remote companion schema for the meta object stored with lp.incident.bundle@0.2.0 and for the materialized incident.meta.remote.json file in D-OSS.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -18,7 +18,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "lp.incident.bundle.meta.remote@0.1.0"
+      "const": "lp.incident.bundle.meta.remote@0.2.0"
     },
     "classification": {
       "type": "string",
@@ -33,7 +33,14 @@
         "remote_upload_failed",
         "remote_secret_not_found",
         "remote_capabilities_mismatch",
-        "remote_probe_failed"
+        "remote_probe_failed",
+        "device_release_gate_failed",
+        "device_release_provider_failed",
+        "native_runtime_error",
+        "native_policy_violation",
+        "native_bridge_timeout",
+        "native_host_crash",
+        "native_permission_blocked"
       ]
     },
     "source": {
@@ -45,186 +52,98 @@
         "manual",
         "control_plane",
         "remote_api",
+        "device_host",
+        "device_release",
         "telemetry"
       ]
     },
     "incident_status": {
       "type": "string",
-      "enum": [
-        "open",
-        "regression_generated",
-        "resolved"
-      ]
+      "enum": ["open", "regression_generated", "resolved"]
     },
     "deployment_id": {
-      "$ref": "#/$defs/id"
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+      "default": null
     },
-    "run_id": {
-      "$ref": "#/$defs/id"
+    "release_plan_id": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+      "default": null
     },
-    "target": {
-      "$ref": "#/$defs/target"
+    "release_exec_id": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+      "default": null
     },
-    "captured_unix_ms": {
-      "$ref": "#/$defs/unix_ms"
-    },
+    "run_id": { "$ref": "#/$defs/id" },
+    "target": { "$ref": "#/$defs/target" },
+    "captured_unix_ms": { "$ref": "#/$defs/unix_ms" },
     "provider": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "server_id",
-        "runtime_provider",
-        "routing_provider"
-      ],
+      "required": ["server_id", "runtime_provider", "routing_provider"],
       "properties": {
-        "server_id": {
-          "$ref": "#/$defs/id"
-        },
-        "runtime_provider": {
-          "const": "lp.impl.runtime.wasmcloud_v1"
-        },
-        "routing_provider": {
-          "const": "lp.impl.routing.edge_http_v1"
-        },
+        "server_id": { "$ref": "#/$defs/id" },
+        "runtime_provider": { "const": "lp.impl.runtime.wasmcloud_v1" },
+        "routing_provider": { "const": "lp.impl.routing.edge_http_v1" },
         "telemetry_provider": {
-          "oneOf": [
-            {
-              "const": "lp.impl.telemetry.otlp_http_v1"
-            },
-            {
-              "type": "null"
-            }
-          ],
+          "oneOf": [{ "const": "lp.impl.telemetry.otlp_http_v1" }, { "type": "null" }],
           "default": null
         }
       }
     },
     "request_id": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/id"
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
       "default": null
     },
     "trace_id": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/id"
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
       "default": null
     },
     "edge_request_id": {
-      "oneOf": [
-        {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "type": "string", "minLength": 1, "maxLength": 256 }, { "type": "null" }],
       "default": null
     },
     "pack_digest": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/digest_ref"
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/digest_ref" }, { "type": "null" }],
       "default": null
     },
     "slot": {
       "type": "string",
-      "enum": [
-        "stable",
-        "candidate",
-        "none"
-      ],
+      "enum": ["stable", "candidate", "none"],
       "default": "none"
     },
     "candidate_weight_pct": {
-      "oneOf": [
-        {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 100
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "type": "integer", "minimum": 0, "maximum": 100 }, { "type": "null" }],
       "default": null
     },
     "status_code": {
-      "oneOf": [
-        {
-          "type": "integer",
-          "minimum": 100,
-          "maximum": 599
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "type": "integer", "minimum": 100, "maximum": 599 }, { "type": "null" }],
       "default": null
     },
     "route_key": {
-      "oneOf": [
-        {
-          "type": "string",
-          "maxLength": 512
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "type": "string", "maxLength": 512 }, { "type": "null" }],
       "default": null
     },
     "decision_id": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/id"
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
       "default": null
     },
     "regression_id": {
-      "oneOf": [
-        {
-          "$ref": "#/$defs/id"
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+      "default": null
+    },
+    "device_release": {
+      "oneOf": [{ "$ref": "#/$defs/device_release_ref" }, { "type": "null" }],
+      "default": null
+    },
+    "native_context": {
+      "oneOf": [{ "$ref": "#/$defs/native_context" }, { "type": "null" }],
       "default": null
     },
     "remote_runtime": {
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": ["object", "null"],
       "default": null,
       "additionalProperties": false,
-      "required": [
-        "lattice_id",
-        "application_name"
-      ],
+      "required": ["lattice_id", "application_name"],
       "properties": {
         "lattice_id": {
           "type": "string",
@@ -237,31 +156,13 @@
           "maxLength": 256
         },
         "instance_ref": {
-          "oneOf": [
-            {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 256
-            },
-            {
-              "type": "null"
-            }
-          ],
+          "oneOf": [{ "type": "string", "minLength": 1, "maxLength": 256 }, { "type": "null" }],
           "default": null
         }
       }
     },
     "public_base_url": {
-      "oneOf": [
-        {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "type": "string", "minLength": 1, "maxLength": 2048 }, { "type": "null" }],
       "default": null
     }
   },
@@ -295,105 +196,194 @@
     "digest_ref": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "sha256",
-        "bytes_len"
-      ],
+      "required": ["sha256", "bytes_len"],
       "properties": {
-        "sha256": {
-          "$ref": "#/$defs/sha256"
-        },
-        "bytes_len": {
-          "$ref": "#/$defs/bytes_len"
-        }
-      }
-    },
-    "artifact_ref_min": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "digest"
-      ],
-      "properties": {
-        "kind": {
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
-        },
-        "digest": {
-          "$ref": "#/$defs/digest_ref"
-        },
-        "label": {
-          "type": "string",
-          "maxLength": 256
-        },
-        "store_uri": {
-          "type": "string",
-          "maxLength": 2048
-        },
-        "media_type": {
-          "type": "string",
-          "maxLength": 256
-        }
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes_len": { "$ref": "#/$defs/bytes_len" }
       }
     },
     "target": {
       "type": "object",
       "additionalProperties": false,
+      "required": ["app_id", "environment"],
+      "properties": {
+        "app_id": { "$ref": "#/$defs/id" },
+        "environment": { "$ref": "#/$defs/environment_key" }
+      }
+    },
+    "host_target_kind": {
+      "type": "string",
+      "enum": ["desktop", "ios", "android"]
+    },
+    "provider_kind": {
+      "type": "string",
+      "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "permission_state": {
+      "type": "string",
+      "enum": ["granted", "denied", "prompt", "restricted", "unsupported"]
+    },
+    "blob_store_capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "max_total_bytes", "max_item_bytes"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "max_total_bytes": { "type": "integer", "minimum": 1, "maximum": 1073741824 },
+        "max_item_bytes": { "type": "integer", "minimum": 1, "maximum": 268435456 }
+      }
+    },
+    "capabilities_summary": {
+      "type": "object",
+      "additionalProperties": false,
       "required": [
-        "app_id",
-        "environment"
+        "camera_photo",
+        "files_pick",
+        "blob_store",
+        "location_foreground",
+        "notifications_local",
+        "notifications_push"
       ],
       "properties": {
-        "app_id": {
-          "$ref": "#/$defs/id"
+        "camera_photo": { "type": "boolean" },
+        "files_pick": { "type": "boolean" },
+        "blob_store": { "$ref": "#/$defs/blob_store_capability" },
+        "location_foreground": { "type": "boolean" },
+        "notifications_local": { "type": "boolean" },
+        "notifications_push": { "type": "boolean" }
+      }
+    },
+    "permission_state_snapshot": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[a-z][a-z0-9._-]*$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/permission_state" },
+      "maxProperties": 32,
+      "default": {}
+    },
+    "breadcrumb": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ord", "event_class", "op", "status"],
+      "properties": {
+        "ord": { "type": "integer", "minimum": 0 },
+        "event_class": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]*$"
         },
-        "environment": {
-          "$ref": "#/$defs/environment_key"
+        "op": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "request_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "unix_ms": {
+          "oneOf": [{ "$ref": "#/$defs/unix_ms" }, { "type": "null" }],
+          "default": null
+        },
+        "duration_ms": {
+          "oneOf": [{ "type": "integer", "minimum": 0, "maximum": 3600000 }, { "type": "null" }],
+          "default": null
+        },
+        "permission": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 512
         }
       }
     },
-    "analysis_decision": {
-      "type": "string",
-      "enum": [
-        "none",
-        "promote",
-        "rollback",
-        "inconclusive"
-      ]
+    "native_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "platform",
+        "capabilities_summary",
+        "permission_state_snapshot",
+        "lifecycle_state",
+        "connectivity_state",
+        "breadcrumbs"
+      ],
+      "properties": {
+        "kind": { "const": "device_native" },
+        "release_plan_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "release_exec_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "provider_kind": {
+          "oneOf": [{ "$ref": "#/$defs/provider_kind" }, { "type": "null" }],
+          "default": null
+        },
+        "platform": { "$ref": "#/$defs/host_target_kind" },
+        "package_manifest_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+          "default": null
+        },
+        "capabilities_summary": { "$ref": "#/$defs/capabilities_summary" },
+        "permission_state_snapshot": { "$ref": "#/$defs/permission_state_snapshot" },
+        "lifecycle_state": {
+          "type": "string",
+          "enum": ["foreground", "background", "resume", "unknown"]
+        },
+        "connectivity_state": {
+          "type": "string",
+          "enum": ["online", "offline", "unknown"]
+        },
+        "breadcrumbs": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/breadcrumb" },
+          "default": []
+        }
+      }
     },
-    "route_algorithm": {
-      "type": "string",
-      "enum": [
-        "hash_bucket_v1"
-      ]
-    },
-    "route_key_header": {
-      "type": "string",
-      "enum": [
-        "X-LP-Route-Key"
-      ]
-    },
-    "runtime_slot_status": {
-      "type": "string",
-      "enum": [
-        "planned",
-        "started",
-        "healthy",
-        "stopped",
-        "failed"
-      ]
-    },
-    "exec_outcome": {
-      "type": "string",
-      "enum": [
-        "unknown",
-        "promoted",
-        "rolled_back",
-        "aborted",
-        "failed"
-      ]
+    "device_release_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_exec_id", "provider_kind", "distribution_lane", "target_kind"],
+      "properties": {
+        "release_exec_id": { "$ref": "#/$defs/id" },
+        "release_plan_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "provider_kind": { "$ref": "#/$defs/provider_kind" },
+        "distribution_lane": {
+          "type": "string",
+          "enum": ["beta", "production"]
+        },
+        "target_kind": {
+          "type": "string",
+          "enum": ["ios", "android"]
+        },
+        "package_manifest_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+          "default": null
+        }
+      }
     }
   }
 }

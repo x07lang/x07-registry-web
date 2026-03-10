@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.incident.bundle.schema.json",
-  "title": "lp.incident.bundle@0.1.0",
-  "description": "Portable bundle of incident evidence captured by the platform.",
+  "title": "lp.incident.bundle@0.2.0",
+  "description": "Portable bundle of incident evidence captured by the platform, with optional native incident context and release linkage.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "incident_id", "created_unix_ms", "app_id", "environment", "window", "refs"],
   "properties": {
-    "schema_version": { "const": "lp.incident.bundle@0.1.0" },
+    "schema_version": { "const": "lp.incident.bundle@0.2.0" },
     "incident_id": { "$ref": "#/$defs/id" },
     "created_unix_ms": { "$ref": "#/$defs/unix_ms" },
     "app_id": { "$ref": "#/$defs/id" },
@@ -19,6 +19,18 @@
       "additionalProperties": false,
       "required": ["exec_id"],
       "properties": { "exec_id": { "$ref": "#/$defs/id" } }
+    },
+    "release_plan_id": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+      "default": null
+    },
+    "release_exec_id": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+      "default": null
+    },
+    "native_context": {
+      "oneOf": [{ "$ref": "#/$defs/native_context" }, { "type": "null" }],
+      "default": null
     },
     "request": { "oneOf": [{ "$ref": "#/$defs/req_ref" }, { "type": "null" }], "default": null },
     "response": { "oneOf": [{ "$ref": "#/$defs/resp_ref" }, { "type": "null" }], "default": null },
@@ -92,6 +104,155 @@
       "properties": { "start_unix_ms": { "$ref": "#/$defs/unix_ms" }, "end_unix_ms": { "$ref": "#/$defs/unix_ms" } }
     },
     "diag_code": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Z][A-Z0-9_-]*$" },
+    "host_target_kind": {
+      "type": "string",
+      "enum": ["desktop", "ios", "android"]
+    },
+    "provider_kind": {
+      "type": "string",
+      "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "permission_state": {
+      "type": "string",
+      "enum": ["granted", "denied", "prompt", "restricted", "unsupported"]
+    },
+    "blob_store_capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "max_total_bytes", "max_item_bytes"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "max_total_bytes": { "type": "integer", "minimum": 1, "maximum": 1073741824 },
+        "max_item_bytes": { "type": "integer", "minimum": 1, "maximum": 268435456 }
+      }
+    },
+    "capabilities_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camera_photo",
+        "files_pick",
+        "blob_store",
+        "location_foreground",
+        "notifications_local",
+        "notifications_push"
+      ],
+      "properties": {
+        "camera_photo": { "type": "boolean" },
+        "files_pick": { "type": "boolean" },
+        "blob_store": { "$ref": "#/$defs/blob_store_capability" },
+        "location_foreground": { "type": "boolean" },
+        "notifications_local": { "type": "boolean" },
+        "notifications_push": { "type": "boolean" }
+      }
+    },
+    "permission_state_snapshot": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[a-z][a-z0-9._-]*$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/permission_state" },
+      "maxProperties": 32,
+      "default": {}
+    },
+    "breadcrumb": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ord", "event_class", "op", "status"],
+      "properties": {
+        "ord": { "type": "integer", "minimum": 0 },
+        "event_class": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "op": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9._-]*$"
+        },
+        "request_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "unix_ms": {
+          "oneOf": [{ "$ref": "#/$defs/unix_ms" }, { "type": "null" }],
+          "default": null
+        },
+        "duration_ms": {
+          "oneOf": [{ "type": "integer", "minimum": 0, "maximum": 3600000 }, { "type": "null" }],
+          "default": null
+        },
+        "permission": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
+    "native_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "platform",
+        "capabilities_summary",
+        "permission_state_snapshot",
+        "lifecycle_state",
+        "connectivity_state",
+        "breadcrumbs"
+      ],
+      "properties": {
+        "kind": { "const": "device_native" },
+        "release_plan_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "release_exec_id": {
+          "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
+          "default": null
+        },
+        "provider_kind": {
+          "oneOf": [{ "$ref": "#/$defs/provider_kind" }, { "type": "null" }],
+          "default": null
+        },
+        "platform": { "$ref": "#/$defs/host_target_kind" },
+        "package_manifest_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+          "default": null
+        },
+        "capabilities_summary": { "$ref": "#/$defs/capabilities_summary" },
+        "permission_state_snapshot": { "$ref": "#/$defs/permission_state_snapshot" },
+        "lifecycle_state": {
+          "type": "string",
+          "enum": ["foreground", "background", "resume", "unknown"]
+        },
+        "connectivity_state": {
+          "type": "string",
+          "enum": ["online", "offline", "unknown"]
+        },
+        "breadcrumbs": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/breadcrumb" },
+          "default": []
+        }
+      }
+    },
     "req_ref": {
       "type": "object",
       "additionalProperties": false,

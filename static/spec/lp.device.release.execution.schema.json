@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.device.release.execution.schema.json",
-  "title": "lp.device.release.execution@0.1.0",
-  "description": "Run record for executing an lp.device.release.plan and recording provider-neutral release state.",
+  "title": "lp.device.release.execution@0.2.0",
+  "description": "Run record for executing an lp.device.release.plan and recording provider-neutral release state, readiness, and the latest native health rollup.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -16,7 +16,7 @@
     "meta"
   ],
   "properties": {
-    "schema_version": { "const": "lp.device.release.execution@0.1.0" },
+    "schema_version": { "const": "lp.device.release.execution@0.2.0" },
     "exec_id": { "$ref": "#/$defs/id" },
     "plan_id": { "$ref": "#/$defs/id" },
     "run_id": { "$ref": "#/$defs/id" },
@@ -39,28 +39,30 @@
         "distribution_lane",
         "target",
         "package_digest",
+        "native_summary",
+        "release_readiness",
         "current_state",
         "current_rollout_percent",
         "latest_metrics_snapshot",
         "latest_slo_eval_report",
         "latest_eval_outcome",
-        "latest_store_release_id"
+        "latest_store_release_id",
+        "latest_native_health_rollup",
+        "latest_native_incident_id",
+        "latest_regression_id",
+        "latest_regression_status"
       ],
       "additionalProperties": true,
       "properties": {
-        "provider_kind": {
-          "type": "string",
-          "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
-        },
+        "provider_kind": { "$ref": "#/$defs/provider_kind" },
         "distribution_lane": {
           "type": "string",
           "enum": ["beta", "production"]
         },
-        "target": {
-          "type": "string",
-          "enum": ["ios", "android"]
-        },
+        "target": { "$ref": "#/$defs/release_target" },
         "package_digest": { "$ref": "#/$defs/digest_ref" },
+        "native_summary": { "$ref": "#/$defs/native_summary" },
+        "release_readiness": { "$ref": "#/$defs/release_readiness" },
         "current_state": {
           "type": "string",
           "enum": [
@@ -124,7 +126,29 @@
             { "type": "null" }
           ],
           "default": null
-        }
+        },
+        "latest_native_health_rollup": {
+          "oneOf": [
+            { "$ref": "#/$defs/native_health_rollup" },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "latest_native_incident_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/id" },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "latest_regression_id": {
+          "oneOf": [
+            { "$ref": "#/$defs/id" },
+            { "type": "null" }
+          ],
+          "default": null
+        },
+        "latest_regression_status": { "$ref": "#/$defs/regression_status" }
       }
     }
   },
@@ -168,6 +192,171 @@
         "label": { "type": "string", "maxLength": 256 }
       }
     },
+    "release_target": {
+      "type": "string",
+      "enum": ["ios", "android"]
+    },
+    "provider_kind": {
+      "type": "string",
+      "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "permission_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9._-]*$"
+    },
+    "telemetry_class": {
+      "type": "string",
+      "enum": [
+        "app.lifecycle",
+        "app.http",
+        "runtime.error",
+        "bridge.timing",
+        "reducer.timing",
+        "policy.violation",
+        "host.webview_crash"
+      ]
+    },
+    "blob_store_capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "max_total_bytes", "max_item_bytes"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "max_total_bytes": { "type": "integer", "minimum": 1, "maximum": 1073741824 },
+        "max_item_bytes": { "type": "integer", "minimum": 1, "maximum": 268435456 }
+      }
+    },
+    "native_capability_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camera_photo",
+        "files_pick",
+        "blob_store",
+        "location_foreground",
+        "notifications_local",
+        "notifications_push"
+      ],
+      "properties": {
+        "camera_photo": { "type": "boolean" },
+        "files_pick": { "type": "boolean" },
+        "blob_store": { "$ref": "#/$defs/blob_store_capability" },
+        "location_foreground": { "type": "boolean" },
+        "notifications_local": { "type": "boolean" },
+        "notifications_push": { "type": "boolean" }
+      }
+    },
+    "native_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_kind",
+        "provider_kind",
+        "package_manifest_sha256",
+        "capabilities",
+        "permission_declarations",
+        "telemetry_classes"
+      ],
+      "properties": {
+        "target_kind": { "$ref": "#/$defs/release_target" },
+        "provider_kind": { "$ref": "#/$defs/provider_kind" },
+        "package_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "capabilities": { "$ref": "#/$defs/native_capability_summary" },
+        "permission_declarations": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/permission_id" }
+        },
+        "telemetry_classes": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/telemetry_class" }
+        }
+      }
+    },
+    "readiness_issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_-]*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "field": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "release_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warnings", "errors"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["ok", "warn", "blocked"]
+        },
+        "warnings": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/readiness_issue" },
+          "default": []
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/readiness_issue" },
+          "default": []
+        }
+      }
+    },
+    "native_health_rollup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "native_runtime_error_count",
+        "native_policy_violation_count",
+        "native_bridge_timeout_count",
+        "native_host_crash_count",
+        "native_permission_blocked_count",
+        "last_native_event_unix_ms"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["unknown", "healthy", "degraded", "failed"]
+        },
+        "native_runtime_error_count": { "type": "integer", "minimum": 0 },
+        "native_policy_violation_count": { "type": "integer", "minimum": 0 },
+        "native_bridge_timeout_count": { "type": "integer", "minimum": 0 },
+        "native_host_crash_count": { "type": "integer", "minimum": 0 },
+        "native_permission_blocked_count": { "type": "integer", "minimum": 0 },
+        "last_native_event_unix_ms": {
+          "oneOf": [{ "$ref": "#/$defs/unix_ms" }, { "type": "null" }],
+          "default": null
+        }
+      }
+    },
+    "regression_status": {
+      "type": "string",
+      "enum": ["not_requested", "requested", "generated", "failed", "unavailable"]
+    },
     "exec_status": {
       "type": "string",
       "enum": ["planned", "started", "completed", "failed", "aborted"]
@@ -177,7 +366,7 @@
       "additionalProperties": false,
       "required": ["kind", "digest"],
       "properties": {
-        "kind": { "const": "lp.device.release.plan@0.1.0" },
+        "kind": { "const": "lp.device.release.plan@0.2.0" },
         "digest": { "$ref": "#/$defs/digest_ref" }
       }
     },

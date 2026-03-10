@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.regression.run.result.schema.json",
-  "title": "lp.regression.run.result@0.1.0",
-  "description": "Result object for x07lp regress from-incident and the corresponding MCP/UI action surfaces.",
+  "title": "lp.regression.run.result@0.2.0",
+  "description": "Result object for x07lp regress from-incident and the corresponding MCP/UI action surfaces, including native replay synthesis status and generated native replay artifacts.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,24 +12,18 @@
     "ok",
     "tool",
     "incident_status_after",
-    "generated"
+    "replay_mode",
+    "replay_synthesis_status",
+    "generated",
+    "generated_trace_artifact_refs",
+    "generated_report_artifact_refs"
   ],
   "properties": {
     "schema_version": {
-      "const": "lp.regression.run.result@0.1.0"
+      "const": "lp.regression.run.result@0.2.0"
     },
-    "incident_id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
-    },
-    "regression_id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128,
-      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
-    },
+    "incident_id": { "$ref": "#/$defs/id" },
+    "regression_id": { "$ref": "#/$defs/id" },
     "ok": {
       "type": "boolean"
     },
@@ -47,7 +41,7 @@
         },
         "command": {
           "type": "string",
-          "const": "app regress from-incident"
+          "enum": ["app regress from-incident", "device regress from-incident"]
         }
       }
     },
@@ -67,258 +61,173 @@
       ],
       "default": null
     },
-    "incident_status_after": {
+    "incident_status_after": { "$ref": "#/$defs/regression_status" },
+    "replay_target_kind": {
+      "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+      "default": null
+    },
+    "replay_mode": {
       "type": "string",
-      "enum": [
-        "not_requested",
-        "requested",
-        "generated",
-        "failed",
-        "unavailable"
-      ]
+      "enum": ["app_trace", "device_native"]
+    },
+    "replay_synthesis_status": {
+      "type": "string",
+      "enum": ["not_applicable", "planned", "generated", "failed", "partial"]
     },
     "target_artifact": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "digest"
-          ],
-          "properties": {
-            "kind": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 128,
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
-            },
-            "digest": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "sha256",
-                "bytes_len"
-              ],
-              "properties": {
-                "sha256": {
-                  "type": "string",
-                  "pattern": "^[0-9a-f]{64}$"
-                },
-                "bytes_len": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              }
-            },
-            "label": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "store_uri": {
-              "type": "string",
-              "maxLength": 2048
-            },
-            "media_type": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "logical_name": {
-              "type": "string",
-              "maxLength": 256
-            }
-          }
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/artifact_ref" }, { "type": "null" }],
       "default": null
     },
     "request": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "digest"
-          ],
-          "properties": {
-            "kind": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 128,
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
-            },
-            "digest": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "sha256",
-                "bytes_len"
-              ],
-              "properties": {
-                "sha256": {
-                  "type": "string",
-                  "pattern": "^[0-9a-f]{64}$"
-                },
-                "bytes_len": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              }
-            },
-            "label": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "store_uri": {
-              "type": "string",
-              "maxLength": 2048
-            },
-            "media_type": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "logical_name": {
-              "type": "string",
-              "maxLength": 256
-            }
-          }
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/artifact_ref" }, { "type": "null" }],
       "default": null
     },
     "report": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "digest"
-          ],
-          "properties": {
-            "kind": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 128,
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
-            },
-            "digest": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "sha256",
-                "bytes_len"
-              ],
-              "properties": {
-                "sha256": {
-                  "type": "string",
-                  "pattern": "^[0-9a-f]{64}$"
-                },
-                "bytes_len": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              }
-            },
-            "label": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "store_uri": {
-              "type": "string",
-              "maxLength": 2048
-            },
-            "media_type": {
-              "type": "string",
-              "maxLength": 256
-            },
-            "logical_name": {
-              "type": "string",
-              "maxLength": 256
-            }
-          }
-        },
-        {
-          "type": "null"
-        }
-      ],
+      "oneOf": [{ "$ref": "#/$defs/artifact_ref" }, { "type": "null" }],
       "default": null
+    },
+    "generated_trace_artifact_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/stored_artifact_ref" },
+      "default": []
+    },
+    "generated_report_artifact_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/stored_artifact_ref" },
+      "default": []
     },
     "generated": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "role",
-          "digest",
-          "media_type",
-          "store_uri"
-        ],
-        "properties": {
-          "role": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 64
-          },
-          "ord": {
-            "type": "integer",
-            "minimum": 0,
-            "default": 0
-          },
-          "kind": {
-            "oneOf": [
-              {
-                "type": "string",
-                "minLength": 3,
-                "maxLength": 128,
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null
-          },
-          "digest": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "sha256",
-              "bytes_len"
-            ],
-            "properties": {
-              "sha256": {
-                "type": "string",
-                "pattern": "^[0-9a-f]{64}$"
-              },
-              "bytes_len": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          },
-          "media_type": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 256
-          },
-          "logical_name": {
-            "type": "string",
-            "maxLength": 256
-          },
-          "store_uri": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 2048
-          }
-        }
-      },
+      "items": { "$ref": "#/$defs/generated_artifact" },
       "default": []
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "digest_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "bytes_len"],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes_len": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "schema_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "host_target_kind": {
+      "type": "string",
+      "enum": ["desktop", "ios", "android"]
+    },
+    "regression_status": {
+      "type": "string",
+      "enum": ["not_requested", "requested", "generated", "failed", "unavailable"]
+    },
+    "artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/schema_id" },
+        "digest": { "$ref": "#/$defs/digest_ref" },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "logical_name": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "stored_artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "media_type", "store_uri"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/schema_id" },
+        "digest": { "$ref": "#/$defs/digest_ref" },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "logical_name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
+    },
+    "generated_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "digest", "media_type", "store_uri"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "ord": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "kind": {
+          "oneOf": [{ "$ref": "#/$defs/schema_id" }, { "type": "null" }],
+          "default": null
+        },
+        "digest": { "$ref": "#/$defs/digest_ref" },
+        "media_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "logical_name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "store_uri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
     }
   }
 }

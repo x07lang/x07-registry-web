@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://x07.io/spec/lp.device.release.plan.schema.json",
-  "title": "lp.device.release.plan@0.1.0",
-  "description": "Deterministic rollout plan for releasing a sealed device package through a single store/provider target.",
+  "title": "lp.device.release.plan@0.2.0",
+  "description": "Deterministic rollout plan for releasing a sealed device package through a single store/provider target, including the normalized native summary frozen at release creation time.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,11 +13,13 @@
     "target",
     "app",
     "package",
+    "native_summary",
+    "release_readiness",
     "strategy",
     "steps"
   ],
   "properties": {
-    "schema_version": { "const": "lp.device.release.plan@0.1.0" },
+    "schema_version": { "const": "lp.device.release.plan@0.2.0" },
     "plan_id": { "$ref": "#/$defs/id" },
     "created_unix_ms": { "$ref": "#/$defs/unix_ms" },
     "provider_profile": {
@@ -30,10 +32,7 @@
         "provider_id": { "$ref": "#/$defs/id" }
       }
     },
-    "target": {
-      "type": "string",
-      "enum": ["ios", "android"]
-    },
+    "target": { "$ref": "#/$defs/release_target" },
     "app": {
       "type": "object",
       "additionalProperties": false,
@@ -67,6 +66,8 @@
         "label": { "type": "string", "maxLength": 256 }
       }
     },
+    "native_summary": { "$ref": "#/$defs/native_summary" },
+    "release_readiness": { "$ref": "#/$defs/release_readiness" },
     "strategy": {
       "type": "object",
       "additionalProperties": false,
@@ -120,6 +121,139 @@
       "minimum": 0,
       "maximum": 9007199254740991,
       "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "release_target": {
+      "type": "string",
+      "enum": ["ios", "android"]
+    },
+    "provider_kind": {
+      "type": "string",
+      "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "permission_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9._-]*$"
+    },
+    "telemetry_class": {
+      "type": "string",
+      "enum": [
+        "app.lifecycle",
+        "app.http",
+        "runtime.error",
+        "bridge.timing",
+        "reducer.timing",
+        "policy.violation",
+        "host.webview_crash"
+      ]
+    },
+    "blob_store_capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "max_total_bytes", "max_item_bytes"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "max_total_bytes": { "type": "integer", "minimum": 1, "maximum": 1073741824 },
+        "max_item_bytes": { "type": "integer", "minimum": 1, "maximum": 268435456 }
+      }
+    },
+    "native_capability_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camera_photo",
+        "files_pick",
+        "blob_store",
+        "location_foreground",
+        "notifications_local",
+        "notifications_push"
+      ],
+      "properties": {
+        "camera_photo": { "type": "boolean" },
+        "files_pick": { "type": "boolean" },
+        "blob_store": { "$ref": "#/$defs/blob_store_capability" },
+        "location_foreground": { "type": "boolean" },
+        "notifications_local": { "type": "boolean" },
+        "notifications_push": { "type": "boolean" }
+      }
+    },
+    "native_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_kind",
+        "provider_kind",
+        "package_manifest_sha256",
+        "capabilities",
+        "permission_declarations",
+        "telemetry_classes"
+      ],
+      "properties": {
+        "target_kind": { "$ref": "#/$defs/release_target" },
+        "provider_kind": { "$ref": "#/$defs/provider_kind" },
+        "package_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "capabilities": { "$ref": "#/$defs/native_capability_summary" },
+        "permission_declarations": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/permission_id" }
+        },
+        "telemetry_classes": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/telemetry_class" }
+        }
+      }
+    },
+    "readiness_issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z][A-Z0-9_-]*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "field": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "release_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warnings", "errors"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["ok", "warn", "blocked"]
+        },
+        "warnings": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/readiness_issue" },
+          "default": []
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 128,
+          "items": { "$ref": "#/$defs/readiness_issue" },
+          "default": []
+        }
+      }
     },
     "step_on_fail": {
       "type": "string",
