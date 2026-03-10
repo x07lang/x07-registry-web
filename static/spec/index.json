@@ -89,6 +89,10 @@
       "path": "lp.device.store.provider.profile.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.environment.list.result.schema.json",
+      "path": "lp.environment.list.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.incident.bundle.meta.local.schema.json",
       "path": "lp.incident.bundle.meta.local.schema.json"
     },
@@ -109,8 +113,16 @@
       "path": "lp.metering.event.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.org.list.result.schema.json",
+      "path": "lp.org.list.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.pipeline.run.schema.json",
       "path": "lp.pipeline.run.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.project.list.result.schema.json",
+      "path": "lp.project.list.result.schema.json"
     },
     {
       "id": "https://x07.io/spec/lp.regression.request.schema.json",
@@ -325,6 +337,10 @@
       "path": "x07-arch.wasm.toolchain.index.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
+      "path": "x07-arch.web_ui.index.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-arch.web.api.schema.json",
       "path": "x07-arch.web.api.schema.json"
     },
@@ -335,10 +351,6 @@
     {
       "id": "https://x07.io/spec/x07-arch.web.openapi_profile.schema.json",
       "path": "x07-arch.web.openapi_profile.schema.json"
-    },
-    {
-      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
-      "path": "x07-arch.web_ui.index.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-arch.wit.index.schema.json",
