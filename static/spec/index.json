@@ -145,6 +145,10 @@
       "path": "lp.remote.logs.result.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.secret.list.result.schema.json",
+      "path": "lp.secret.list.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.target.list.result.schema.json",
       "path": "lp.target.list.result.schema.json"
     },

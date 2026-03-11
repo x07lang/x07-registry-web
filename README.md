@@ -33,6 +33,7 @@ This repo also ships a small UI-focused guide under `docs/getting-started/`.
 Platform `lp.*` schemas in `static/spec/` are mirrored from `x07-platform-contracts/spec/schemas/`.
 Mirror generation requires checked-out schema sources for `x07`, `x07-wasm-backend`, and `x07-platform-contracts` under `_deps/` or explicit `X07_*_SPEC_DIR` overrides.
 When the platform contract set changes, refresh the mirror from the contracts repo instead of hand-editing files in this repo.
+The current hosted mirror includes `lp.secret.list.result@0.1.0` for hosted secret inventory views.
 
 ## Runtime config
 
