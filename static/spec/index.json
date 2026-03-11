@@ -349,6 +349,10 @@
       "path": "x07-arch.wasm.toolchain.index.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
+      "path": "x07-arch.web_ui.index.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-arch.web.api.schema.json",
       "path": "x07-arch.web.api.schema.json"
     },
@@ -359,10 +363,6 @@
     {
       "id": "https://x07.io/spec/x07-arch.web.openapi_profile.schema.json",
       "path": "x07-arch.web.openapi_profile.schema.json"
-    },
-    {
-      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
-      "path": "x07-arch.web_ui.index.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-arch.wit.index.schema.json",
