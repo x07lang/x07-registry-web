@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.usage.summary.result.schema.json",
+  "title": "lp.usage.summary.result@0.1.0",
+  "description": "Hosted usage summary for the selected org, project, and environment context over a materialized time window.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_unix_ms",
+    "org_id",
+    "project_id",
+    "environment_id",
+    "window_start_unix_ms",
+    "window_end_unix_ms",
+    "totals"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.usage.summary.result@0.1.0"
+    },
+    "generated_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "org_id": {
+      "$ref": "#/$defs/id"
+    },
+    "project_id": {
+      "$ref": "#/$defs/id"
+    },
+    "environment_id": {
+      "$ref": "#/$defs/id"
+    },
+    "window_start_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "window_end_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "totals": {
+      "$ref": "#/$defs/totals"
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deployments",
+        "sqlite_instances",
+        "http_requests",
+        "runtime_fuel",
+        "runtime_byte_seconds",
+        "artifact_storage_byte_seconds",
+        "artifact_egress_bytes",
+        "sqlite_storage_byte_seconds",
+        "sqlite_read_requests",
+        "sqlite_write_requests",
+        "sqlite_egress_bytes"
+      ],
+      "properties": {
+        "deployments": {
+          "$ref": "#/$defs/quantity"
+        },
+        "sqlite_instances": {
+          "$ref": "#/$defs/quantity"
+        },
+        "http_requests": {
+          "$ref": "#/$defs/quantity"
+        },
+        "runtime_fuel": {
+          "$ref": "#/$defs/quantity"
+        },
+        "runtime_byte_seconds": {
+          "$ref": "#/$defs/quantity"
+        },
+        "artifact_storage_byte_seconds": {
+          "$ref": "#/$defs/quantity"
+        },
+        "artifact_egress_bytes": {
+          "$ref": "#/$defs/quantity"
+        },
+        "sqlite_storage_byte_seconds": {
+          "$ref": "#/$defs/quantity"
+        },
+        "sqlite_read_requests": {
+          "$ref": "#/$defs/quantity"
+        },
+        "sqlite_write_requests": {
+          "$ref": "#/$defs/quantity"
+        },
+        "sqlite_egress_bytes": {
+          "$ref": "#/$defs/quantity"
+        }
+      }
+    }
+  }
+}

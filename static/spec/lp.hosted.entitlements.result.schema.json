@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.hosted.entitlements.result.schema.json",
+  "title": "lp.hosted.entitlements.result@0.1.0",
+  "description": "Hosted entitlement and quota view for the selected org, project, and environment context.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_unix_ms",
+    "org_id",
+    "project_id",
+    "environment_id",
+    "tier",
+    "plan_id",
+    "can_deploy",
+    "limits",
+    "capabilities",
+    "usage",
+    "idle_suspend_after_seconds"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.hosted.entitlements.result@0.1.0"
+    },
+    "generated_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
+    "org_id": {
+      "$ref": "#/$defs/id"
+    },
+    "project_id": {
+      "$ref": "#/$defs/id"
+    },
+    "environment_id": {
+      "$ref": "#/$defs/id"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "trial",
+        "paid"
+      ]
+    },
+    "plan_id": {
+      "$ref": "#/$defs/id"
+    },
+    "can_deploy": {
+      "type": "boolean"
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/capabilities"
+    },
+    "usage": {
+      "$ref": "#/$defs/usage"
+    },
+    "idle_suspend_after_seconds": {
+      "$ref": "#/$defs/count"
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "bytes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9223372036854775807
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_deployments",
+        "max_sqlite_instances",
+        "max_requests_day",
+        "max_storage_bytes"
+      ],
+      "properties": {
+        "max_deployments": {
+          "$ref": "#/$defs/count"
+        },
+        "max_sqlite_instances": {
+          "$ref": "#/$defs/count"
+        },
+        "max_requests_day": {
+          "$ref": "#/$defs/count"
+        },
+        "max_storage_bytes": {
+          "$ref": "#/$defs/bytes"
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_apps_only",
+        "private_apps",
+        "sqlite_only",
+        "custom_domains",
+        "shared_subdomain_only"
+      ],
+      "properties": {
+        "public_apps_only": {
+          "type": "boolean"
+        },
+        "private_apps": {
+          "type": "boolean"
+        },
+        "sqlite_only": {
+          "type": "boolean"
+        },
+        "custom_domains": {
+          "type": "boolean"
+        },
+        "shared_subdomain_only": {
+          "type": "boolean"
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deployments",
+        "sqlite_instances"
+      ],
+      "properties": {
+        "deployments": {
+          "$ref": "#/$defs/count"
+        },
+        "sqlite_instances": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    }
+  }
+}
