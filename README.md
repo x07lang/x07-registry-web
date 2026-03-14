@@ -1,6 +1,8 @@
 # x07-registry-web
 
-Registry UI for `x07.io`.
+`x07-registry-web` is the browser UI for the X07 package registry at [`x07.io`](https://x07.io).
+
+It gives end users a simple way to discover packages, inspect versions, read metadata, and follow publishing links, while still staying aligned with the same registry API and schema surfaces the toolchain uses.
 
 Support: see `SUPPORT.md`.
 
@@ -9,37 +11,91 @@ Community:
 - Discord: https://discord.gg/59xuEuPN47
 - Email: support@x07lang.org
 
-This is a static SPA built with SvelteKit (`@sveltejs/adapter-static` with `fallback: index.html`).
+## What Is In This Repo
 
-## End-user docs
+- **Static registry UI** built with SvelteKit
+- **Runtime configuration loader** for choosing the backing API and index
+- **Mirrored schema files** served under `/spec/`
+- **UI-focused getting-started docs** under `docs/getting-started/`
 
-The UI is a browse/search surface; the canonical package workflows live on x07lang.org:
+This is a static SPA built with SvelteKit using `@sveltejs/adapter-static` and `fallback: index.html`.
+
+## Vision
+
+The vision is that X07 package distribution should feel coherent no matter how someone arrives there.
+
+If a person starts from the browser, they should see the same package catalog and contract surface that `x07 pkg` and coding agents use. If they start from the CLI or an MCP client, the web UI should still be a trustworthy human-facing window into the same system.
+
+## How It Fits The X07 Ecosystem
+
+- [`x07`](https://github.com/x07lang/x07) provides the package commands and canonical package docs
+- [`x07-registry`](https://github.com/x07lang/x07-registry) serves the registry API and sparse index
+- `x07-registry-web` renders that data for humans at `x07.io`
+- [`x07-platform-contracts`](https://github.com/x07lang/x07-platform-contracts) contributes the mirrored `lp.*` schema slice served from this site
+
+So this repo is the human-facing package and schema portal for the broader language ecosystem.
+
+## Practical Usage
+
+Use this repo when you need to:
+
+- run the `x07.io` UI locally
+- point the UI at a local or hosted registry API
+- refresh the mirrored schema set served from `/spec/`
+- work on the package browsing and publishing experience
+
+## End-User Docs
+
+The UI is a browse and search surface. The canonical package workflow docs live on `x07lang.org`:
 
 - Packages overview: https://x07lang.org/docs/packages/
 - Publishing by example: https://x07lang.org/docs/packages/publishing-by-example/
-- Agent contracts (canonical machine endpoints): https://x07lang.org/docs/agent/contract/
+- Agent contracts: https://x07lang.org/docs/agent/contract/
 
-This repo also ships a small UI-focused guide under `docs/getting-started/`.
+This repo also ships a smaller UI-focused guide under `docs/getting-started/`.
 
-## Related repositories
+## Install And Run Locally
+
+From the repo root:
+
+```sh
+npm ci
+npm run dev
+```
+
+## Use It As Part Of The Full X07 Workflow
+
+Keep this repo alongside:
+
+- [`x07`](https://github.com/x07lang/x07) for install, package, and publish commands
+- [`x07-registry`](https://github.com/x07lang/x07-registry) for the API server
+
+In that setup:
+
+- `x07 pkg ...` is the toolchain entrypoint
+- `x07.io` is the human browse and discovery surface
+- the same `/spec/` files stay available for machines and humans
+
+## Related Repositories
 
 - Registry API: https://github.com/x07lang/x07-registry
-- Toolchain + canonical docs: https://github.com/x07lang/x07
+- Toolchain and canonical docs: https://github.com/x07lang/x07
 
-## Toolchain schemas
+## Toolchain Schemas
 
-`x07.io` serves the canonical JSON Schema files under `/spec/` (for example: `/spec/x07-run.report.schema.json`).
+`x07.io` serves the canonical JSON Schema files under `/spec/`, for example `/spec/x07-run.report.schema.json`.
 
 Platform `lp.*` schemas in `static/spec/` are mirrored from `x07-platform-contracts/spec/schemas/`.
 Mirror generation requires checked-out schema sources for `x07`, `x07-wasm-backend`, and `x07-platform-contracts` under `_deps/` or explicit `X07_*_SPEC_DIR` overrides.
 When the platform contract set changes, refresh the mirror from the contracts repo instead of hand-editing files in this repo.
+
 The current hosted mirror includes `lp.secret.list.result@0.1.0`, `lp.hosted.entitlements.result@0.1.0`, and `lp.usage.summary.result@0.1.0` for hosted secret, entitlement, and usage views.
 
-## Runtime config
+## Runtime Config
 
 The built site loads a runtime config JSON file at:
 
-- `/x07-registry-web-config.json` (served from `static/x07-registry-web-config.json`)
+- `/x07-registry-web-config.json` served from `static/x07-registry-web-config.json`
 
 Example:
 
@@ -54,14 +110,7 @@ Example:
 
 Schema reference: `schemas/x07-registry-web-config.v1.schema.json`.
 
-If the runtime config is missing or invalid, the UI shows a “Registry misconfigured” page with the failing URL and details.
-
-## Development
-
-```sh
-npm ci
-npm run dev
-```
+If the runtime config is missing or invalid, the UI shows a "Registry misconfigured" page with the failing URL and details.
 
 ## Checks
 
