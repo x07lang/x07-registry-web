@@ -60,8 +60,28 @@
       "oneOf": [{ "$ref": "#/$defs/device_release_ref" }, { "type": "null" }],
       "default": null
     },
+    "native_classification": {
+      "oneOf": [{ "$ref": "#/$defs/native_classification" }, { "type": "null" }],
+      "default": null
+    },
     "native_context": {
       "oneOf": [{ "$ref": "#/$defs/native_context" }, { "type": "null" }],
+      "default": null
+    },
+    "provider_kind": {
+      "oneOf": [{ "$ref": "#/$defs/provider_kind" }, { "type": "null" }],
+      "default": null
+    },
+    "target_kind": {
+      "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+      "default": null
+    },
+    "package_manifest_sha256": {
+      "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
+      "default": null
+    },
+    "reason": {
+      "oneOf": [{ "type": "string", "maxLength": 16384 }, { "type": "null" }],
       "default": null
     },
     "window": {
@@ -124,6 +144,10 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
+    "sha256_prefixed": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
     "digest_ref": {
       "type": "object",
       "additionalProperties": false,
@@ -151,6 +175,21 @@
         "platform_kill",
         "device_release_gate_failed",
         "device_release_provider_failed",
+        "native_runtime_error",
+        "native_policy_violation",
+        "native_bridge_timeout",
+        "native_host_crash",
+        "native_permission_blocked",
+        "device_policy_violation",
+        "device_webview_crash",
+        "device_bridge_parse",
+        "device_js_unhandled",
+        "device_crash_spike"
+      ]
+    },
+    "native_classification": {
+      "type": "string",
+      "enum": [
         "native_runtime_error",
         "native_policy_violation",
         "native_bridge_timeout",
@@ -319,18 +358,33 @@
         },
         "platform": { "$ref": "#/$defs/host_target_kind" },
         "package_manifest_sha256": {
-          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+          "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
           "default": null
         },
         "capabilities_summary": { "$ref": "#/$defs/capabilities_summary" },
-        "permission_state_snapshot": { "$ref": "#/$defs/permission_state_snapshot" },
+        "permission_state_snapshot": {
+          "oneOf": [{ "$ref": "#/$defs/permission_state_snapshot" }, { "type": "null" }],
+          "default": null
+        },
         "lifecycle_state": {
-          "type": "string",
-          "enum": ["foreground", "background", "resume", "unknown"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["foreground", "background", "resume", "unknown"]
+            },
+            { "type": "null" }
+          ],
+          "default": null
         },
         "connectivity_state": {
-          "type": "string",
-          "enum": ["online", "offline", "unknown"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["online", "offline", "unknown"]
+            },
+            { "type": "null" }
+          ],
+          "default": null
         },
         "breadcrumbs": {
           "type": "array",
@@ -352,12 +406,16 @@
           "type": "string",
           "enum": ["beta", "production"]
         },
+        "package_digest": {
+          "oneOf": [{ "$ref": "#/$defs/digest_ref" }, { "type": "null" }],
+          "default": null
+        },
         "target_kind": {
           "type": "string",
           "enum": ["ios", "android"]
         },
         "package_manifest_sha256": {
-          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+          "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
           "default": null
         }
       }
@@ -495,6 +553,30 @@
         "device_release": {
           "oneOf": [{ "$ref": "#/$defs/device_release_ref" }, { "type": "null" }],
           "default": null
+        },
+        "native_classification": {
+          "oneOf": [{ "$ref": "#/$defs/native_classification" }, { "type": "null" }],
+          "default": null
+        },
+        "native_context": {
+          "oneOf": [{ "$ref": "#/$defs/native_context" }, { "type": "null" }],
+          "default": null
+        },
+        "provider_kind": {
+          "oneOf": [{ "$ref": "#/$defs/provider_kind" }, { "type": "null" }],
+          "default": null
+        },
+        "target_kind": {
+          "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+          "default": null
+        },
+        "package_manifest_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
+          "default": null
+        },
+        "reason": {
+          "oneOf": [{ "type": "string", "maxLength": 16384 }, { "type": "null" }],
+          "default": null
         }
       }
     },
@@ -556,8 +638,24 @@
           "oneOf": [{ "$ref": "#/$defs/device_release_ref" }, { "type": "null" }],
           "default": null
         },
+        "native_classification": {
+          "oneOf": [{ "$ref": "#/$defs/native_classification" }, { "type": "null" }],
+          "default": null
+        },
         "native_context": {
           "oneOf": [{ "$ref": "#/$defs/native_context" }, { "type": "null" }],
+          "default": null
+        },
+        "provider_kind": {
+          "oneOf": [{ "$ref": "#/$defs/provider_kind" }, { "type": "null" }],
+          "default": null
+        },
+        "target_kind": {
+          "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+          "default": null
+        },
+        "package_manifest_sha256": {
+          "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
           "default": null
         }
       }

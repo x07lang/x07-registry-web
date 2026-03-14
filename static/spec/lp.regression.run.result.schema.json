@@ -49,6 +49,9 @@
       "type": "boolean",
       "default": false
     },
+    "created_unix_ms": {
+      "$ref": "#/$defs/unix_ms"
+    },
     "out_dir": {
       "oneOf": [
         {
@@ -63,7 +66,7 @@
     },
     "incident_status_after": { "$ref": "#/$defs/regression_status" },
     "replay_target_kind": {
-      "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+      "oneOf": [{ "$ref": "#/$defs/replay_target_kind" }, { "type": "null" }],
       "default": null
     },
     "replay_mode": {
@@ -127,6 +130,12 @@
         }
       }
     },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
     "schema_id": {
       "type": "string",
       "minLength": 3,
@@ -136,6 +145,10 @@
     "host_target_kind": {
       "type": "string",
       "enum": ["desktop", "ios", "android"]
+    },
+    "replay_target_kind": {
+      "type": "string",
+      "enum": ["desktop", "ios", "android", "unknown"]
     },
     "regression_status": {
       "type": "string",
@@ -185,6 +198,15 @@
         "logical_name": {
           "type": "string",
           "maxLength": 256
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "ord": {
+          "type": "integer",
+          "minimum": 0
         },
         "store_uri": {
           "type": "string",

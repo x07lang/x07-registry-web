@@ -28,8 +28,24 @@
       "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }],
       "default": null
     },
+    "native_classification": {
+      "oneOf": [{ "$ref": "#/$defs/native_classification" }, { "type": "null" }],
+      "default": null
+    },
     "native_context": {
       "oneOf": [{ "$ref": "#/$defs/native_context" }, { "type": "null" }],
+      "default": null
+    },
+    "provider_kind": {
+      "oneOf": [{ "$ref": "#/$defs/provider_kind" }, { "type": "null" }],
+      "default": null
+    },
+    "target_kind": {
+      "oneOf": [{ "$ref": "#/$defs/host_target_kind" }, { "type": "null" }],
+      "default": null
+    },
+    "package_manifest_sha256": {
+      "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
       "default": null
     },
     "request": { "oneOf": [{ "$ref": "#/$defs/req_ref" }, { "type": "null" }], "default": null },
@@ -48,6 +64,7 @@
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
     },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sha256_prefixed": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "bytes_len": { "type": "integer", "minimum": 0 },
     "unix_ms": {
       "type": "integer",
@@ -111,6 +128,16 @@
     "provider_kind": {
       "type": "string",
       "enum": ["mock_v1", "appstoreconnect_v1", "googleplay_v1"]
+    },
+    "native_classification": {
+      "type": "string",
+      "enum": [
+        "native_runtime_error",
+        "native_policy_violation",
+        "native_bridge_timeout",
+        "native_host_crash",
+        "native_permission_blocked"
+      ]
     },
     "permission_state": {
       "type": "string",
@@ -232,18 +259,33 @@
         },
         "platform": { "$ref": "#/$defs/host_target_kind" },
         "package_manifest_sha256": {
-          "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+          "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "type": "null" }],
           "default": null
         },
         "capabilities_summary": { "$ref": "#/$defs/capabilities_summary" },
-        "permission_state_snapshot": { "$ref": "#/$defs/permission_state_snapshot" },
+        "permission_state_snapshot": {
+          "oneOf": [{ "$ref": "#/$defs/permission_state_snapshot" }, { "type": "null" }],
+          "default": null
+        },
         "lifecycle_state": {
-          "type": "string",
-          "enum": ["foreground", "background", "resume", "unknown"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["foreground", "background", "resume", "unknown"]
+            },
+            { "type": "null" }
+          ],
+          "default": null
         },
         "connectivity_state": {
-          "type": "string",
-          "enum": ["online", "offline", "unknown"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["online", "offline", "unknown"]
+            },
+            { "type": "null" }
+          ],
+          "default": null
         },
         "breadcrumbs": {
           "type": "array",
