@@ -3,7 +3,6 @@
 	import { compare as semverCompare, valid as semverValid } from 'semver';
 
 	import {
-		getIndexConfig,
 		getOwners,
 		getDownloadUrl,
 		getIndexEntries,
@@ -11,17 +10,15 @@
 		latestNonYankedVersion,
 		validatePackageName
 	} from '$lib/api/registry';
-	import type { ApiError, IndexConfig, IndexEntry, OwnersResponse, PackageMetadataResponse } from '$lib/api/types';
+	import type { ApiError, IndexEntry, OwnersResponse, PackageMetadataResponse } from '$lib/api/types';
 	import { getRegistryWebConfig } from '$lib/config_runtime';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
-	import { isOfficialPackage } from '$lib/ui/official';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
 	import CopyJson from '$lib/ui/components/CopyJson.svelte';
 
 	let name = $derived(page.params.name ?? '');
 
-	let indexConfig = $state<IndexConfig | null>(null);
 	let entries = $state<IndexEntry[] | null>(null);
 	let latest = $state<string | null>(null);
 	let latestMeta = $state<PackageMetadataResponse | null>(null);
@@ -33,7 +30,6 @@
 	$effect(() => {
 		const pkgName = name;
 
-		indexConfig = null;
 		entries = null;
 		latest = null;
 		latestMeta = null;
@@ -51,14 +47,12 @@
 		(async () => {
 			try {
 				validatePackageName(pkgName);
-				const [cfg, gotEntries, gotOwners, webCfg] = await Promise.all([
-					getIndexConfig(),
+				const [gotEntries, gotOwners, webCfg] = await Promise.all([
 					getIndexEntries(pkgName),
 					getOwners(pkgName),
 					getRegistryWebConfig()
 				]);
 				if (cancelled) return;
-				indexConfig = cfg;
 				entries = gotEntries;
 				owners = gotOwners;
 				indexBase = webCfg.index_base;
@@ -126,7 +120,7 @@
 <div class="page-header">
 	<div class="page-header__top">
 		<h1>{name}</h1>
-		{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
+		{#if owners?.is_official || latestMeta?.is_official}
 			<span class="badge badge--accent">official</span>
 		{/if}
 	</div>

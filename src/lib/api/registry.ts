@@ -2,7 +2,7 @@ import { compare as semverCompare, valid as semverValid } from 'semver';
 
 import { getRegistryWebConfig } from '$lib/config_runtime';
 
-import { ApiClientError, fetchJson, fetchText } from './client';
+import { ApiClientError, fetchCachedJson, fetchCachedText, fetchJson, fetchText } from './client';
 import {
 	decodeAuthSessionResponse,
 	decodeCatalog,
@@ -37,29 +37,19 @@ import type {
 	YankResponse
 } from './types';
 
-let indexConfigPromise: Promise<IndexConfig> | null = null;
-const indexEntriesPromiseByName = new Map<string, Promise<IndexEntry[]>>();
-const ownersPromiseByName = new Map<string, Promise<OwnersResponse>>();
-const packageMetadataPromiseByKey = new Map<string, Promise<PackageMetadataResponse>>();
-const advisoriesPromiseByKey = new Map<string, Promise<AdvisoriesResponse>>();
-
 async function indexUrl(path: string): Promise<string> {
 	const cfg = await getRegistryWebConfig();
 	return new URL(path.replace(/^\/+/, ''), cfg.index_base).toString();
 }
 
 export async function getIndexConfig(): Promise<IndexConfig> {
-	if (indexConfigPromise) return indexConfigPromise;
-	indexConfigPromise = (async () => {
-		const cfg = await getRegistryWebConfig();
-		return fetchJson(new URL('config.json', cfg.index_base).toString(), decodeIndexConfig);
-	})();
-	return indexConfigPromise;
+	const cfg = await getRegistryWebConfig();
+	return fetchCachedJson(new URL('config.json', cfg.index_base).toString(), decodeIndexConfig);
 }
 
 export async function getCatalog(): Promise<Catalog> {
 	const cfg = await getRegistryWebConfig();
-	return fetchJson(new URL(cfg.catalog_path, cfg.index_base).toString(), decodeCatalog);
+	return fetchCachedJson(new URL(cfg.catalog_path, cfg.index_base).toString(), decodeCatalog);
 }
 
 export function validatePackageName(name: string): void {
@@ -79,46 +69,33 @@ export function indexRelativePath(name: string): string {
 }
 
 export async function getIndexEntries(name: string): Promise<IndexEntry[]> {
-	const existing = indexEntriesPromiseByName.get(name);
-	if (existing) return existing;
-
-	const p = (async () => {
-		const url = await indexUrl(indexRelativePath(name));
-		const text = await fetchText(url);
-		const out: IndexEntry[] = [];
-		for (const [idx, line] of text.split('\n').entries()) {
-			const trimmed = line.trim();
-			if (!trimmed) continue;
-			let raw: unknown;
-			try {
-				raw = JSON.parse(trimmed);
-			} catch (err) {
-				throw new ApiClientError({
-					code: 'X07WEB_BAD_INDEX',
-					message: `invalid ndjson line ${idx + 1}`,
-					url
-				});
-			}
-			try {
-				out.push(decodeIndexEntry(raw));
-			} catch (err) {
-				throw new ApiClientError({
-					code: 'X07WEB_BAD_INDEX',
-					message: err instanceof Error ? `invalid index entry line ${idx + 1}: ${err.message}` : `invalid index entry line ${idx + 1}`,
-					url
-				});
-			}
+	const url = await indexUrl(indexRelativePath(name));
+	const text = await fetchCachedText(url);
+	const out: IndexEntry[] = [];
+	for (const [idx, line] of text.split('\n').entries()) {
+		const trimmed = line.trim();
+		if (!trimmed) continue;
+		let raw: unknown;
+		try {
+			raw = JSON.parse(trimmed);
+		} catch (err) {
+			throw new ApiClientError({
+				code: 'X07WEB_BAD_INDEX',
+				message: `invalid ndjson line ${idx + 1}`,
+				url
+			});
 		}
-		return out;
-	})();
-
-	indexEntriesPromiseByName.set(name, p);
-	try {
-		return await p;
-	} catch (err) {
-		indexEntriesPromiseByName.delete(name);
-		throw err;
+		try {
+			out.push(decodeIndexEntry(raw));
+		} catch (err) {
+			throw new ApiClientError({
+				code: 'X07WEB_BAD_INDEX',
+				message: err instanceof Error ? `invalid index entry line ${idx + 1}: ${err.message}` : `invalid index entry line ${idx + 1}`,
+				url
+			});
+		}
 	}
+	return out;
 }
 
 export function latestNonYankedVersion(entries: IndexEntry[]): string | null {
@@ -135,23 +112,9 @@ export async function getPackageMetadata(
 	name: string,
 	version: string
 ): Promise<PackageMetadataResponse> {
-	const key = `${name}@${version}`;
-	const existing = packageMetadataPromiseByKey.get(key);
-	if (existing) return existing;
-
-	const p = (async () => {
-		const cfg = await getIndexConfig();
-		const url = new URL(`packages/${name}/${version}/metadata`, cfg.api).toString();
-		return fetchJson(url, decodePackageMetadataResponse);
-	})();
-
-	packageMetadataPromiseByKey.set(key, p);
-	try {
-		return await p;
-	} catch (err) {
-		packageMetadataPromiseByKey.delete(key);
-		throw err;
-	}
+	const cfg = await getIndexConfig();
+	const url = new URL(`packages/${name}/${version}/metadata`, cfg.api).toString();
+	return fetchCachedJson(url, decodePackageMetadataResponse);
 }
 
 export async function getDownloadUrl(name: string, version: string): Promise<string> {
@@ -165,26 +128,13 @@ export async function searchPackages(q: string, limit = 20, offset = 0): Promise
 	if (q.trim()) url.searchParams.set('q', q.trim());
 	url.searchParams.set('limit', String(limit));
 	url.searchParams.set('offset', String(offset));
-	return fetchJson(url.toString(), decodeSearchResponse);
+	return fetchCachedJson(url.toString(), decodeSearchResponse);
 }
 
 export async function getOwners(name: string): Promise<OwnersResponse> {
-	const existing = ownersPromiseByName.get(name);
-	if (existing) return existing;
-
-	const p = (async () => {
-		const cfg = await getIndexConfig();
-		const url = new URL(`packages/${name}/owners`, cfg.api).toString();
-		return fetchJson(url, decodeOwnersResponse);
-	})();
-
-	ownersPromiseByName.set(name, p);
-	try {
-		return await p;
-	} catch (err) {
-		ownersPromiseByName.delete(name);
-		throw err;
-	}
+	const cfg = await getIndexConfig();
+	const url = new URL(`packages/${name}/owners`, cfg.api).toString();
+	return fetchCachedJson(url, decodeOwnersResponse);
 }
 
 export async function getAuthSession(): Promise<AuthSessionResponse> {
@@ -247,36 +197,20 @@ export async function yankVersion(
 ): Promise<YankResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL(`packages/${name}/${version}/yank`, cfg.api).toString();
-	const resp = await fetchJson(url, decodeYankResponse, undefined, {
+	return fetchJson(url, decodeYankResponse, undefined, {
 		method: 'POST',
 		credentials: 'include',
 		headers: { 'Content-Type': 'application/json', 'X-X07-CSRF': csrfToken },
 		body: JSON.stringify({ yanked })
 	});
-	indexEntriesPromiseByName.delete(name);
-	return resp;
 }
 
 export async function listAdvisories(name: string, version: string): Promise<AdvisoriesResponse> {
-	const key = `${name}@${version}`;
-	const existing = advisoriesPromiseByKey.get(key);
-	if (existing) return existing;
-
-	const p = (async () => {
-		const cfg = await getIndexConfig();
-		const url = new URL(`packages/${name}/${version}/advisories`, cfg.api).toString();
-		return fetchJson(url, decodeAdvisoriesResponse, undefined, {
-			credentials: 'include'
-		});
-	})();
-
-	advisoriesPromiseByKey.set(key, p);
-	try {
-		return await p;
-	} catch (err) {
-		advisoriesPromiseByKey.delete(key);
-		throw err;
-	}
+	const cfg = await getIndexConfig();
+	const url = new URL(`packages/${name}/${version}/advisories`, cfg.api).toString();
+	return fetchCachedJson(url, decodeAdvisoriesResponse, undefined, {
+		credentials: 'include'
+	});
 }
 
 export async function createAdvisory(
@@ -287,15 +221,12 @@ export async function createAdvisory(
 ): Promise<AdvisoryCreateResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL(`packages/${name}/${version}/advisories`, cfg.api).toString();
-	const resp = await fetchJson(url, decodeAdvisoryCreateResponse, undefined, {
+	return fetchJson(url, decodeAdvisoryCreateResponse, undefined, {
 		method: 'POST',
 		credentials: 'include',
 		headers: { 'Content-Type': 'application/json', 'X-X07-CSRF': csrfToken },
 		body: JSON.stringify(body)
 	});
-	indexEntriesPromiseByName.delete(name);
-	advisoriesPromiseByKey.delete(`${name}@${version}`);
-	return resp;
 }
 
 export async function withdrawAdvisory(
@@ -306,12 +237,9 @@ export async function withdrawAdvisory(
 ): Promise<AdvisoryWithdrawResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL(`packages/${name}/${version}/advisories/${advisoryId}/withdraw`, cfg.api).toString();
-	const resp = await fetchJson(url, decodeAdvisoryWithdrawResponse, undefined, {
+	return fetchJson(url, decodeAdvisoryWithdrawResponse, undefined, {
 		method: 'POST',
 		credentials: 'include',
 		headers: { 'X-X07-CSRF': csrfToken }
 	});
-	indexEntriesPromiseByName.delete(name);
-	advisoriesPromiseByKey.delete(`${name}@${version}`);
-	return resp;
 }

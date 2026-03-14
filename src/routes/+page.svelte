@@ -8,7 +8,6 @@
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
-	import { isOfficialPackage } from '$lib/ui/official';
 
 	let q = $state('');
 	let indexBase = $state<string | null>(null);
@@ -124,7 +123,7 @@
 						<li>
 							<div>
 								<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
-								{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
+								{#if pkg.is_official}
 									<span class="badge" style="margin-left: 0.5rem;">official</span>
 								{/if}
 							</div>

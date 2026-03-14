@@ -58,10 +58,12 @@ export type PackageMetadataResponse = {
 	ok: true;
 	package: PackageManifest;
 	cksum: string;
+	is_official: boolean;
 };
 
 export type CatalogPackage = {
 	name: string;
+	is_official: boolean;
 	latest?: string;
 };
 
@@ -72,6 +74,7 @@ export type Catalog = {
 
 export type SearchHit = {
 	name: string;
+	is_official: boolean;
 	latest_version?: string;
 	description?: string;
 	modules_count?: number;
@@ -143,6 +146,7 @@ export type SimpleOkResponse = {
 export type OwnersResponse = {
 	ok: true;
 	name: string;
+	is_official: boolean;
 	owners: string[];
 };
 

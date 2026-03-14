@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 
 	import { getRegistryWebConfig } from '$lib/config_runtime';
 	import {
 		getAuthSession,
-		getIndexConfig,
 		getDownloadUrl,
 		getIndexEntries,
 		listAdvisories,
@@ -18,7 +16,6 @@
 	import type {
 		ApiError,
 		AuthSessionUser,
-		IndexConfig,
 		IndexEntry,
 		PackageMetadataResponse,
 		PkgAdvisory,
@@ -28,14 +25,12 @@
 	import CopyButton from '$lib/ui/components/CopyButton.svelte';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
-	import { isOfficialPackage } from '$lib/ui/official';
 	import CopyCode from '$lib/ui/components/CopyCode.svelte';
 	import CopyJson from '$lib/ui/components/CopyJson.svelte';
 
 	let name = $derived(page.params.name ?? '');
 	let ver = $derived(page.params.ver ?? '');
 
-	let indexConfig = $state<IndexConfig | null>(null);
 	let entry = $state<IndexEntry | null>(null);
 	let meta = $state<PackageMetadataResponse | null>(null);
 	let downloadUrl = $state<string | null>(null);
@@ -57,10 +52,6 @@
 	let advisoryUrl = $state('');
 	let advisoryDetails = $state('');
 
-	onMount(() => {
-		// Session is loaded as part of the main effect.
-	});
-
 	$effect(() => {
 		const pkgName = name;
 		const version = ver;
@@ -68,7 +59,6 @@
 		entry = null;
 		meta = null;
 		downloadUrl = null;
-		indexConfig = null;
 		indexBase = null;
 		user = null;
 		csrfToken = null;
@@ -81,13 +71,8 @@
 		(async () => {
 			try {
 				validatePackageName(pkgName);
-				const [cfg, webCfg, session] = await Promise.all([
-					getIndexConfig(),
-					getRegistryWebConfig(),
-					getAuthSession()
-				]);
+				const [webCfg, session] = await Promise.all([getRegistryWebConfig(), getAuthSession()]);
 				if (cancelled) return;
-				indexConfig = cfg;
 				indexBase = webCfg.index_base;
 				if (session.authenticated && session.user && session.csrf_token) {
 					user = session.user;
@@ -250,7 +235,7 @@
 		{#if entry?.advisories && entry.advisories.length > 0}
 			<span class="badge badge--warning">advised</span>
 		{/if}
-		{#if isOfficialPackage(name, indexConfig?.verified_namespaces)}
+		{#if meta?.is_official}
 			<span class="badge badge--accent">official</span>
 		{/if}
 	</div>

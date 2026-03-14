@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { fetchText } from '$lib/api/client';
+	import { fetchCachedText } from '$lib/api/client';
 	import type { ApiError } from '$lib/api/types';
 	import { getRegistryWebConfig } from '$lib/config_runtime';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
@@ -17,7 +17,7 @@
 		try {
 			const cfg = await getRegistryWebConfig();
 			openapiUrl = cfg.openapi_url;
-			openapiText = await fetchText(cfg.openapi_url, 5000);
+			openapiText = await fetchCachedText(cfg.openapi_url, 5000);
 		} catch (err) {
 			error = errorToApiError(err);
 		}

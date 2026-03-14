@@ -1,20 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 
 	import {
-		getIndexConfig,
 		getIndexEntries,
 		getOwners,
 		getPackageMetadata,
 		latestNonYankedVersion,
 		searchPackages
 	} from '$lib/api/registry';
-	import type { ApiError, IndexConfig, SearchResponse, SearchHit } from '$lib/api/types';
+	import type { ApiError, SearchResponse, SearchHit } from '$lib/api/types';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
-	import { isOfficialPackage } from '$lib/ui/official';
 
 	type HitDetails = {
 		name: string;
@@ -46,7 +43,6 @@
 
 	let response = $state<SearchResponse | null>(null);
 	let error = $state<ApiError | null>(null);
-	let indexConfig = $state<IndexConfig | null>(null);
 
 	let prefix = $state('');
 	let hasDescription = $state(false);
@@ -85,14 +81,6 @@
 		return () => {
 			cancelled = true;
 		};
-	});
-
-	onMount(async () => {
-		try {
-			indexConfig = await getIndexConfig();
-		} catch {
-			// Surface errors via the regular request path.
-		}
 	});
 
 	function submit(e: SubmitEvent) {
@@ -261,7 +249,7 @@
 					<tr>
 						<td>
 							<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
-							{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
+							{#if pkg.is_official}
 								<span class="badge badge--accent">official</span>
 							{/if}
 						</td>

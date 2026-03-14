@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	import { getIndexConfig, searchPackages } from '$lib/api/registry';
-	import type { ApiError, IndexConfig, SearchHit, SearchResponse } from '$lib/api/types';
+	import { searchPackages } from '$lib/api/registry';
+	import type { ApiError, SearchHit, SearchResponse } from '$lib/api/types';
 	import ErrorBox from '$lib/ui/components/ErrorBox.svelte';
 	import { errorToApiError } from '$lib/ui/error';
-	import { isOfficialPackage } from '$lib/ui/official';
 
 	const PER_PAGE = 25;
 
 	let q = $state('');
 	let currentPage = $state(1);
 	let searchResult = $state<SearchResponse | null>(null);
-	let indexConfig = $state<IndexConfig | null>(null);
 	let error = $state<ApiError | null>(null);
 	let loading = $state(true);
 
@@ -21,12 +19,8 @@
 		error = null;
 		try {
 			const offset = (page - 1) * PER_PAGE;
-			const [result, cfg] = await Promise.all([
-				searchPackages(query, PER_PAGE, offset),
-				indexConfig ? Promise.resolve(indexConfig) : getIndexConfig()
-			]);
+			const result = await searchPackages(query, PER_PAGE, offset);
 			searchResult = result;
-			indexConfig = cfg;
 		} catch (err) {
 			error = errorToApiError(err);
 		} finally {
@@ -124,7 +118,7 @@
 					<tr>
 						<td class="col-name">
 							<a href={`/packages/${pkg.name}`}>{pkg.name}</a>
-							{#if isOfficialPackage(pkg.name, indexConfig?.verified_namespaces)}
+							{#if pkg.is_official}
 								<span class="badge badge--accent">official</span>
 							{/if}
 						</td>

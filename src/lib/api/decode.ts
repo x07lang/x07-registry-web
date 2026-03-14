@@ -177,7 +177,8 @@ export function decodePackageMetadataResponse(raw: unknown): PackageMetadataResp
 	if (raw.ok !== true) throw new Error('metadata response ok must be true');
 	const pkg = decodePackageManifest(raw.package);
 	const cksum = expectString(raw.cksum, 'cksum');
-	return { ok: true, package: pkg, cksum };
+	const is_official = expectBool(raw.is_official, 'is_official');
+	return { ok: true, package: pkg, cksum, is_official };
 }
 
 export function decodeCatalog(raw: unknown): Catalog {
@@ -190,8 +191,9 @@ export function decodeCatalog(raw: unknown): Catalog {
 	const packages = packagesRaw.map((p) => {
 		if (!isRecord(p)) throw new Error('package must be an object');
 		const name = expectString(p.name, 'name');
+		const is_official = expectBool(p.is_official, 'is_official');
 		const latest = p.latest === undefined ? undefined : expectString(p.latest, 'latest');
-		return { name, latest };
+		return { name, is_official, latest };
 	});
 
 	return { schema_version: 'x07.index-catalog@0.1.0', packages };
@@ -209,10 +211,11 @@ export function decodeSearchResponse(raw: unknown): SearchResponse {
 	const packages = packagesRaw.map((p) => {
 		if (!isRecord(p)) throw new Error('package must be an object');
 		const name = expectString(p.name, 'name');
+		const is_official = expectBool(p.is_official, 'is_official');
 		const latest_version = expectOptionalString(p.latest_version, 'latest_version');
 		const description = expectOptionalString(p.description, 'description');
 		const modules_count = p.modules_count === undefined || p.modules_count === null ? undefined : expectNumber(p.modules_count, 'modules_count');
-		return { name, latest_version, description, modules_count };
+		return { name, is_official, latest_version, description, modules_count };
 	});
 	return { ok: true, q, limit, offset, total, packages };
 }
@@ -331,8 +334,9 @@ export function decodeOwnersResponse(raw: unknown): OwnersResponse {
 	if (!isRecord(raw)) throw new Error('owners response must be an object');
 	if (raw.ok !== true) throw new Error('owners response ok must be true');
 	const name = expectString(raw.name, 'name');
+	const is_official = expectBool(raw.is_official, 'is_official');
 	const owners = expectStringArray(raw.owners, 'owners');
-	return { ok: true, name, owners };
+	return { ok: true, name, is_official, owners };
 }
 
 export function decodeYankResponse(raw: unknown): YankResponse {
