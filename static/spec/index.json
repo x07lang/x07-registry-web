@@ -217,6 +217,14 @@
       "path": "x07-arch.archive.profile.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-arch.boundaries.index.schema.json",
+      "path": "x07-arch.boundaries.index.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-arch.boundaries.report.schema.json",
+      "path": "x07-arch.boundaries.report.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-arch.budgets.index.schema.json",
       "path": "x07-arch.budgets.index.schema.json"
     },
@@ -393,6 +401,22 @@
       "path": "x07-capabilities.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-capsule.attest.schema.json",
+      "path": "x07-capsule.attest.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-capsule.contract.schema.json",
+      "path": "x07-capsule.contract.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-capsule.index.schema.json",
+      "path": "x07-capsule.index.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-compile.attest.schema.json",
+      "path": "x07-compile.attest.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-db.migrate.plan.schema.json",
       "path": "x07-db.migrate.plan.schema.json"
     },
@@ -435,6 +459,10 @@
     {
       "id": "https://x07.io/spec/x07-doc.report.schema.json",
       "path": "x07-doc.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-effect.log.schema.json",
+      "path": "x07-effect.log.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-guest.failure.schema.json",
@@ -555,6 +583,10 @@
     {
       "id": "https://x07.io/spec/x07-run.report.schema.json",
       "path": "x07-run.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-runtime.attest.schema.json",
+      "path": "x07-runtime.attest.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-slo.profile.schema.json",
@@ -845,6 +877,18 @@
       "path": "x07-tool-test.report.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-tool-trust-certify.report.schema.json",
+      "path": "x07-tool-trust-certify.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-trust-profile-check.report.schema.json",
+      "path": "x07-tool-trust-profile-check.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-trust-profile.report.schema.json",
+      "path": "x07-tool-trust-profile.report.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-tool-trust-report.report.schema.json",
       "path": "x07-tool-trust-report.report.schema.json"
     },
@@ -869,12 +913,28 @@
       "path": "x07-tool.report.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-trust.certificate.schema.json",
+      "path": "x07-trust.certificate.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-trust.profile.schema.json",
+      "path": "x07-trust.profile.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-trust.report.schema.json",
       "path": "x07-trust.report.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-typecheck.diagdata@0.1.0.schema.json",
       "path": "x07-typecheck.diagdata@0.1.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-verify.coverage.schema.json",
+      "path": "x07-verify.coverage.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-verify.primitives.schema.json",
+      "path": "x07-verify.primitives.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-verify.report.schema.json",
@@ -1179,6 +1239,14 @@
     {
       "id": "https://x07.io/spec/x07ast.v0.5.0.schema.json",
       "path": "x07ast.v0.5.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07ast.v0.6.0.schema.json",
+      "path": "x07ast.v0.6.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07ast.v0.7.0.schema.json",
+      "path": "x07ast.v0.7.0.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07c.report.schema.json",
