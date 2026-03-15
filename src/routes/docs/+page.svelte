@@ -57,6 +57,37 @@
 	</a>
 
 	<a
+		href="https://x07lang.org/docs/toolchain/formal-verification/"
+		target="_blank"
+		rel="noopener noreferrer"
+		class="doc-card card card--glow"
+	>
+		<div class="doc-card__icon">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"></path>
+				<path d="M9.5 12.5l1.5 1.5 3.5-4"></path>
+			</svg>
+		</div>
+		<h2 class="doc-card__title">Formal verification</h2>
+		<p class="doc-card__desc muted">Understand proofs, certificates, runtime attestation, and review artifacts</p>
+	</a>
+
+	<a
+		href="/spec/"
+		class="doc-card card card--glow"
+	>
+		<div class="doc-card__icon">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M4 5h16"></path>
+				<path d="M4 12h16"></path>
+				<path d="M4 19h16"></path>
+			</svg>
+		</div>
+		<h2 class="doc-card__title">Schema browser</h2>
+		<p class="doc-card__desc muted">Open the published `/spec/` schema set, including trust and certification contracts</p>
+	</a>
+
+	<a
 		href="https://x07lang.org/docs/about/"
 		target="_blank"
 		rel="noopener noreferrer"

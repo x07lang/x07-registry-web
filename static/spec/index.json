@@ -1221,6 +1221,10 @@
       "path": "x07.verify.cex@0.1.0.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07.verify.cex@0.2.0.schema.json",
+      "path": "x07.verify.cex@0.2.0.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07ast.schema.json",
       "path": "x07ast.schema.json"
     },

@@ -7,6 +7,8 @@ For the canonical package workflow (how to add, lock, pack, and publish packages
 - Packages overview: https://x07lang.org/docs/packages/
 - Publishing by example: https://x07lang.org/docs/packages/publishing-by-example/
 - Agent quickstart: https://x07lang.org/docs/getting-started/agent-quickstart/
+- Formal verification & certification: https://x07lang.org/docs/toolchain/formal-verification/
+- Review & trust artifacts: https://x07lang.org/docs/toolchain/review-trust/
 - Why X07: https://x07lang.org/docs/about/
 - FAQ: https://x07lang.org/docs/faq/
 
@@ -15,6 +17,7 @@ For the canonical package workflow (how to add, lock, pack, and publish packages
 - Search/browse package names and available versions.
 - Inspect package metadata and module IDs.
 - Link out to the registry API contract and index endpoints.
+- Browse the published `/spec/` schemas that agents and reviewers use for trust, certification, and runtime evidence.
 
 ## UI guides
 

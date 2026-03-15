@@ -46,10 +46,12 @@ Use this repo when you need to:
 
 ## End-User Docs
 
-The UI is a browse and search surface. The canonical package workflow docs live on `x07lang.org`:
+The UI is a browse and search surface. The canonical docs for packages, trust, and certification live on `x07lang.org`:
 
 - Packages overview: https://x07lang.org/docs/packages/
 - Publishing by example: https://x07lang.org/docs/packages/publishing-by-example/
+- Formal verification & certification: https://x07lang.org/docs/toolchain/formal-verification/
+- Review & trust artifacts: https://x07lang.org/docs/toolchain/review-trust/
 - Agent contracts: https://x07lang.org/docs/agent/contract/
 
 This repo also ships a smaller UI-focused guide under `docs/getting-started/`.
@@ -84,6 +86,7 @@ In that setup:
 ## Toolchain Schemas
 
 `x07.io` serves the canonical JSON Schema files under `/spec/`, for example `/spec/x07-run.report.schema.json`.
+That includes the trust and certification schemas used by `x07 verify`, `x07 trust capsule`, `x07 trust certify`, runtime attestation, and review-diff tooling.
 
 Platform `lp.*` schemas in `static/spec/` are mirrored from `x07-platform-contracts/spec/schemas/`.
 Mirror generation requires checked-out schema sources for `x07`, `x07-wasm-backend`, and `x07-platform-contracts` under `_deps/` or explicit `X07_*_SPEC_DIR` overrides.
