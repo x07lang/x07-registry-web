@@ -421,6 +421,10 @@
       "path": "x07-db.migrate.plan.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-dep.closure.attest.schema.json",
+      "path": "x07-dep.closure.attest.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-deploy.plan.schema.json",
       "path": "x07-deploy.plan.schema.json"
     },
@@ -545,6 +549,10 @@
       "path": "x07-package.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-peer.policy.schema.json",
+      "path": "x07-peer.policy.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-pkg.advisory.schema.json",
       "path": "x07-pkg.advisory.schema.json"
     },
@@ -567,6 +575,10 @@
     {
       "id": "https://x07.io/spec/x07-project.v0.3.0.schema.json",
       "path": "x07-project.v0.3.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-project.v0.4.0.schema.json",
+      "path": "x07-project.v0.4.0.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-provenance.dsse.envelope.schema.json",
@@ -789,6 +801,10 @@
       "path": "x07-tool-pkg-add.report.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-tool-pkg-attest-closure.report.schema.json",
+      "path": "x07-tool-pkg-attest-closure.report.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-tool-pkg-lock.report.schema.json",
       "path": "x07-tool-pkg-lock.report.schema.json"
     },
@@ -827,6 +843,14 @@
     {
       "id": "https://x07.io/spec/x07-tool-policy.report.schema.json",
       "path": "x07-tool-policy.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-prove-check.report.schema.json",
+      "path": "x07-tool-prove-check.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-prove.report.schema.json",
+      "path": "x07-tool-prove.report.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-tool-review-diff.report.schema.json",
@@ -875,6 +899,18 @@
     {
       "id": "https://x07.io/spec/x07-tool-test.report.schema.json",
       "path": "x07-tool-test.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-trust-capsule-attest.report.schema.json",
+      "path": "x07-tool-trust-capsule-attest.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-trust-capsule-check.report.schema.json",
+      "path": "x07-tool-trust-capsule-check.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-tool-trust-capsule.report.schema.json",
+      "path": "x07-tool-trust-capsule.report.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-tool-trust-certify.report.schema.json",
@@ -937,8 +973,24 @@
       "path": "x07-verify.primitives.schema.json"
     },
     {
+      "id": "https://x07.io/spec/x07-verify.proof-check.report.schema.json",
+      "path": "x07-verify.proof-check.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-verify.proof-object.schema.json",
+      "path": "x07-verify.proof-object.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-verify.proof-summary.schema.json",
+      "path": "x07-verify.proof-summary.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/x07-verify.report.schema.json",
       "path": "x07-verify.report.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-verify.summary.schema.json",
+      "path": "x07-verify.summary.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-vm.bundle.manifest.schema.json",
@@ -1251,6 +1303,10 @@
     {
       "id": "https://x07.io/spec/x07ast.v0.7.0.schema.json",
       "path": "x07ast.v0.7.0.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07ast.v0.8.0.schema.json",
+      "path": "x07ast.v0.8.0.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07c.report.schema.json",
