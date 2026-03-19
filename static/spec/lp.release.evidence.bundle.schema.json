@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.release.evidence.bundle.schema.json",
+  "title": "lp.release.evidence.bundle@0.1.0",
+  "description": "Evidence bundle attached to a release candidate or promoted release.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release_id",
+    "items"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.release.evidence.bundle@0.1.0"
+    },
+    "release_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_kind"
+        ],
+        "properties": {
+          "evidence_kind": {
+            "type": "string",
+            "enum": [
+              "provenance",
+              "review_diff",
+              "trust_report",
+              "certificate",
+              "sbom",
+              "policy_eval",
+              "deploy_plan",
+              "incident_link",
+              "regression_link"
+            ]
+          },
+          "digest": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "uri": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "inline_json": {
+            "type": "object"
+          },
+          "created_unix_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    }
+  }
+}

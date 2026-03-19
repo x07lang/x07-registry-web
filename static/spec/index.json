@@ -29,6 +29,14 @@
       "path": "lp.auth.whoami.result.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.binding.requirements.result.schema.json",
+      "path": "lp.binding.requirements.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.binding.status.result.schema.json",
+      "path": "lp.binding.status.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.change_request.schema.json",
       "path": "lp.change_request.schema.json"
     },
@@ -137,6 +145,22 @@
       "path": "lp.regression.run.result.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.release.decision.record.schema.json",
+      "path": "lp.release.decision.record.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.release.evidence.bundle.schema.json",
+      "path": "lp.release.evidence.bundle.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.release.query.result.schema.json",
+      "path": "lp.release.query.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.release.submit.request.schema.json",
+      "path": "lp.release.submit.request.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.remote.capabilities.response.schema.json",
       "path": "lp.remote.capabilities.response.schema.json"
     },
@@ -147,6 +171,10 @@
     {
       "id": "https://x07.io/spec/lp.remote.logs.result.schema.json",
       "path": "lp.remote.logs.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.scale.profile.schema.json",
+      "path": "lp.scale.profile.schema.json"
     },
     {
       "id": "https://x07.io/spec/lp.secret.list.result.schema.json",
@@ -161,8 +189,24 @@
       "path": "lp.target.profile.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.topology.preview.result.schema.json",
+      "path": "lp.topology.preview.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.usage.summary.result.schema.json",
       "path": "lp.usage.summary.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.workload.describe.result.schema.json",
+      "path": "lp.workload.describe.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.workload.list.result.schema.json",
+      "path": "lp.workload.list.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.workload.pack.manifest.schema.json",
+      "path": "lp.workload.pack.manifest.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-agent.context.schema.json",
@@ -357,10 +401,6 @@
       "path": "x07-arch.wasm.toolchain.index.schema.json"
     },
     {
-      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
-      "path": "x07-arch.web_ui.index.schema.json"
-    },
-    {
       "id": "https://x07.io/spec/x07-arch.web.api.schema.json",
       "path": "x07-arch.web.api.schema.json"
     },
@@ -371,6 +411,10 @@
     {
       "id": "https://x07.io/spec/x07-arch.web.openapi_profile.schema.json",
       "path": "x07-arch.web.openapi_profile.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
+      "path": "x07-arch.web_ui.index.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-arch.wit.index.schema.json",

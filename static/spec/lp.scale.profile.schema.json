@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.scale.profile.schema.json",
+  "title": "lp.scale.profile@0.1.0",
+  "description": "Scale profile attached to a workload cell or topology group.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "class"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.scale.profile@0.1.0"
+    },
+    "class": {
+      "type": "string",
+      "enum": [
+        "replicated-http",
+        "partitioned-consumer",
+        "singleton-orchestrator",
+        "leased-worker",
+        "burst-batch",
+        "embedded-kernel"
+      ]
+    },
+    "min_replicas": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    },
+    "max_replicas": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "target_concurrency": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scale_metric": {
+      "type": "string",
+      "enum": [
+        "cpu",
+        "memory",
+        "http-rps",
+        "queue-depth",
+        "consumer-lag",
+        "cron-disabled"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    }
+  }
+}

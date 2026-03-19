@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.workload.describe.result.schema.json",
+  "title": "lp.workload.describe.result@0.1.0",
+  "description": "Detailed workload description used by CLI, UI, MCP, and hosted release surfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "view",
+    "workload_id",
+    "display_name",
+    "scope",
+    "cells",
+    "generated_unix_ms"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.workload.describe.result@0.1.0"
+    },
+    "view": {
+      "enum": [
+        "summary",
+        "full"
+      ]
+    },
+    "workload_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "org_id",
+        "project_id"
+      ],
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "environment_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "default_target_kind": {
+      "type": "string",
+      "enum": [
+        "hosted",
+        "k8s",
+        "wasmcloud"
+      ]
+    },
+    "default_trust_profile": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cell_id",
+          "cell_key",
+          "cell_kind",
+          "ingress_kind",
+          "runtime_class",
+          "scale_class",
+          "topology_group"
+        ],
+        "properties": {
+          "cell_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cell_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cell_kind": {
+            "type": "string",
+            "enum": [
+              "api-cell",
+              "event-consumer",
+              "scheduled-job",
+              "policy-service",
+              "workflow-service",
+              "mcp-tool"
+            ]
+          },
+          "ingress_kind": {
+            "type": "string",
+            "enum": [
+              "http",
+              "event",
+              "schedule",
+              "workflow",
+              "mcp"
+            ]
+          },
+          "runtime_class": {
+            "type": "string",
+            "enum": [
+              "wasm-component",
+              "native-http",
+              "native-worker",
+              "embedded-kernel"
+            ]
+          },
+          "scale_class": {
+            "type": "string",
+            "enum": [
+              "replicated-http",
+              "partitioned-consumer",
+              "singleton-orchestrator",
+              "leased-worker",
+              "burst-batch",
+              "embedded-kernel"
+            ]
+          },
+          "topology_group": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "binding_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "default": []
+          }
+        }
+      }
+    },
+    "generated_unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  }
+}

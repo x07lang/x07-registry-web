@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.release.submit.request.schema.json",
+  "title": "lp.release.submit.request@0.1.0",
+  "description": "Submission request for a workload release candidate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workload_id",
+    "pack_digest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.release.submit.request@0.1.0"
+    },
+    "workload_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "environment_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "target_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "pack_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source_generation_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "rollout_strategy": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "canary",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "notes": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  }
+}

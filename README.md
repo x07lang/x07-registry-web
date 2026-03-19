@@ -92,7 +92,7 @@ Platform `lp.*` schemas in `static/spec/` are mirrored from `x07-platform-contra
 Mirror generation requires checked-out schema sources for `x07`, `x07-wasm-backend`, and `x07-platform-contracts` under `_deps/` or explicit `X07_*_SPEC_DIR` overrides.
 When the platform contract set changes, refresh the mirror from the contracts repo instead of hand-editing files in this repo.
 
-The current hosted mirror includes `lp.secret.list.result@0.1.0`, `lp.hosted.entitlements.result@0.1.0`, and `lp.usage.summary.result@0.1.0` for hosted secret, entitlement, and usage views.
+The current hosted mirror includes the workload/release additions for the new PaaS line as well as the earlier hosted views. In particular, `/spec/` now serves the mirrored `lp.workload.*`, `lp.topology.*`, `lp.binding.*`, `lp.release.*`, and `lp.scale.profile@0.1.0` schemas alongside `lp.secret.list.result@0.1.0`, `lp.hosted.entitlements.result@0.1.0`, and `lp.usage.summary.result@0.1.0`.
 
 ## Runtime Config
 

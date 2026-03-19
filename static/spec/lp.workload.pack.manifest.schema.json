@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.workload.pack.manifest.schema.json",
+  "title": "lp.workload.pack.manifest@0.1.0",
+  "description": "Manifest embedded in x07.workload.pack artifacts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workload_id",
+    "project",
+    "cells",
+    "bindings_required"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.workload.pack.manifest@0.1.0"
+    },
+    "workload_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry",
+        "module_roots"
+      ],
+      "properties": {
+        "entry": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "module_roots": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "$ref": "https://x07.io/spec/lp.workload.describe.result.schema.json#/properties/cells/items"
+      }
+    },
+    "bindings_required": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    },
+    "topology_profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "placement"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "placement": {
+            "type": "string",
+            "enum": [
+              "co-located",
+              "split-by-cell",
+              "embedded-kernel"
+            ]
+          }
+        }
+      },
+      "default": []
+    }
+  }
+}

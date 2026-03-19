@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.binding.requirements.result.schema.json",
+  "title": "lp.binding.requirements.result@0.1.0",
+  "description": "Binding requirements declared by a workload or cell set.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workload_id",
+    "bindings",
+    "generated_unix_ms"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.binding.requirements.result@0.1.0"
+    },
+    "workload_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "kind",
+          "required_by_cells",
+          "required"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "postgres",
+              "mysql",
+              "sqlite",
+              "redis",
+              "kafka",
+              "amqp",
+              "s3",
+              "secret",
+              "otlp"
+            ]
+          },
+          "required_by_cells": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "minItems": 1
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "generated_unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  }
+}

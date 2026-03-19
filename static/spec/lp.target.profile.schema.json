@@ -8,17 +8,15 @@
   "required": [
     "schema_version",
     "name",
-    "kind",
-    "base_url",
-    "api_version",
-    "auth",
-    "runtime_provider",
-    "routing_provider"
+    "kind"
   ],
   "properties": {
     "schema_version": { "const": "lp.target.profile@0.1.0" },
     "name": { "$ref": "#/$defs/name" },
-    "kind": { "const": "oss_remote" },
+    "kind": {
+      "type": "string",
+      "enum": ["oss_remote", "hosted", "k8s", "wasmcloud"]
+    },
     "base_url": {
       "type": "string",
       "minLength": 1,
@@ -70,10 +68,47 @@
     "lattice_id": { "type": "string", "minLength": 1, "maxLength": 128 },
     "default_namespace": { "type": "string", "minLength": 1, "maxLength": 128 },
     "default_env": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "cluster_ref": { "type": "string", "minLength": 1, "maxLength": 256 },
     "telemetry_collector_hint": { "type": "string", "minLength": 1, "maxLength": 2048 },
     "expect_capabilities_digest": { "$ref": "#/$defs/sha256_prefixed" }
   },
   "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": { "enum": ["oss_remote", "hosted", "k8s", "wasmcloud"] }
+        }
+      },
+      "then": {
+        "required": [
+          "base_url",
+          "api_version",
+          "auth",
+          "runtime_provider",
+          "routing_provider"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "k8s" }
+        }
+      },
+      "then": {
+        "required": ["default_namespace"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "wasmcloud" }
+        }
+      },
+      "then": {
+        "required": ["lattice_id"]
+      }
+    },
     {
       "if": {
         "required": ["tls"],

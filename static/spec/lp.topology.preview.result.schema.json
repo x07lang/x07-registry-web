@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.topology.preview.result.schema.json",
+  "title": "lp.topology.preview.result@0.1.0",
+  "description": "Preview output showing how a workload will be grouped and placed before deployment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workload_id",
+    "profile_id",
+    "groups",
+    "generated_unix_ms"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "lp.topology.preview.result@0.1.0"
+    },
+    "workload_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "target_kind": {
+      "type": "string",
+      "enum": [
+        "hosted",
+        "k8s",
+        "wasmcloud"
+      ]
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "group_key",
+          "cell_keys",
+          "runtime_class",
+          "scale_class"
+        ],
+        "properties": {
+          "group_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cell_keys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "minItems": 1
+          },
+          "runtime_class": {
+            "type": "string",
+            "enum": [
+              "wasm-component",
+              "native-http",
+              "native-worker",
+              "embedded-kernel"
+            ]
+          },
+          "scale_class": {
+            "type": "string",
+            "enum": [
+              "replicated-http",
+              "partitioned-consumer",
+              "singleton-orchestrator",
+              "leased-worker",
+              "burst-batch",
+              "embedded-kernel"
+            ]
+          },
+          "exposure": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "none"
+            ],
+            "default": "none"
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "default": []
+          }
+        }
+      }
+    },
+    "generated_unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  }
+}

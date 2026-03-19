@@ -51,7 +51,7 @@
           "$ref": "#/$defs/id"
         },
         "kind": {
-          "const": "oss_remote"
+          "enum": ["oss_remote", "hosted", "k8s", "wasmcloud"]
         },
         "base_url": {
           "type": "string",
@@ -92,10 +92,14 @@
           "default": null
         },
         "runtime_provider": {
-          "const": "lp.impl.runtime.wasmcloud_v1"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
         },
         "routing_provider": {
-          "const": "lp.impl.routing.edge_http_v1"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
         },
         "oci_registry": {
           "oneOf": [
@@ -176,6 +180,19 @@
           "oneOf": [
             {
               "$ref": "#/$defs/environment_key"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "cluster_ref": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
             },
             {
               "type": "null"
