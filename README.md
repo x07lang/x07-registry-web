@@ -89,7 +89,8 @@ In that setup:
 That includes the trust and certification schemas used by `x07 verify`, `x07 trust capsule`, `x07 trust certify`, runtime attestation, and review-diff tooling.
 
 Platform `lp.*` schemas in `static/spec/` are mirrored from `x07-platform-contracts/spec/schemas/`.
-Mirror generation requires checked-out schema sources for `x07`, `x07-wasm-backend`, and `x07-platform-contracts` under `_deps/` or explicit `X07_*_SPEC_DIR` overrides.
+Mirror generation requires checked-out schema sources for `x07`, `x07-wasm-backend`, and `x07-platform-contracts`.
+`bash scripts/check_generated_spec_mirror.sh` auto-discovers the normal sibling checkout layout under `../x07`, `../x07-wasm-backend`, and `../x07-platform-contracts` before falling back to `_deps/`, and you can still override any path with `X07_*_SPEC_DIR`.
 When the platform contract set changes, refresh the mirror from the contracts repo instead of hand-editing files in this repo.
 
 The current hosted mirror includes the workload/release additions for the new PaaS line as well as the earlier hosted views. In particular, `/spec/` now serves the mirrored `lp.workload.*`, `lp.topology.*`, `lp.binding.*`, `lp.release.*`, and `lp.scale.profile@0.1.0` schemas alongside `lp.secret.list.result@0.1.0`, `lp.hosted.entitlements.result@0.1.0`, and `lp.usage.summary.result@0.1.0`.
@@ -118,6 +119,7 @@ If the runtime config is missing or invalid, the UI shows a "Registry misconfigu
 ## Checks
 
 ```sh
+bash scripts/check_generated_spec_mirror.sh
 npm run check
 npm run build
 ```
