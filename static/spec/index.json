@@ -29,6 +29,10 @@
       "path": "lp.auth.whoami.result.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.binding.probe.result.schema.json",
+      "path": "lp.binding.probe.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.binding.requirements.result.schema.json",
       "path": "lp.binding.requirements.result.schema.json"
     },
@@ -153,8 +157,20 @@
       "path": "lp.release.evidence.bundle.schema.json"
     },
     {
+      "id": "https://x07.io/spec/lp.release.gate.request.schema.json",
+      "path": "lp.release.gate.request.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.release.gate.result.schema.json",
+      "path": "lp.release.gate.result.schema.json"
+    },
+    {
       "id": "https://x07.io/spec/lp.release.query.result.schema.json",
       "path": "lp.release.query.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.release.rollback.result.schema.json",
+      "path": "lp.release.rollback.result.schema.json"
     },
     {
       "id": "https://x07.io/spec/lp.release.submit.request.schema.json",
@@ -179,6 +195,10 @@
     {
       "id": "https://x07.io/spec/lp.secret.list.result.schema.json",
       "path": "lp.secret.list.result.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.target.health.result.schema.json",
+      "path": "lp.target.health.result.schema.json"
     },
     {
       "id": "https://x07.io/spec/lp.target.list.result.schema.json",
@@ -207,6 +227,10 @@
     {
       "id": "https://x07.io/spec/lp.workload.pack.manifest.schema.json",
       "path": "lp.workload.pack.manifest.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/lp.workload.state.result.schema.json",
+      "path": "lp.workload.state.result.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-agent.context.schema.json",
@@ -401,10 +425,6 @@
       "path": "x07-arch.wasm.toolchain.index.schema.json"
     },
     {
-      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
-      "path": "x07-arch.web_ui.index.schema.json"
-    },
-    {
       "id": "https://x07.io/spec/x07-arch.web.api.schema.json",
       "path": "x07-arch.web.api.schema.json"
     },
@@ -415,6 +435,10 @@
     {
       "id": "https://x07.io/spec/x07-arch.web.openapi_profile.schema.json",
       "path": "x07-arch.web.openapi_profile.schema.json"
+    },
+    {
+      "id": "https://x07.io/spec/x07-arch.web_ui.index.schema.json",
+      "path": "x07-arch.web_ui.index.schema.json"
     },
     {
       "id": "https://x07.io/spec/x07-arch.wit.index.schema.json",

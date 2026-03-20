@@ -79,12 +79,55 @@
             ],
             "default": null
           },
+          "configured": {
+            "type": "boolean",
+            "default": false
+          },
+          "target_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "reason_code": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
           "last_checked_unix_ms": {
             "oneOf": [
               {
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "probe_result_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
               },
               {
                 "type": "null"

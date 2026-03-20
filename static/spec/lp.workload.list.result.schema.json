@@ -94,6 +94,39 @@
               "failed"
             ]
           },
+          "desired_state": {
+            "type": "string",
+            "enum": [
+              "running",
+              "paused",
+              "stopped",
+              "deleted"
+            ]
+          },
+          "observed_state": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "pending",
+              "running",
+              "degraded",
+              "failed",
+              "stopped"
+            ]
+          },
+          "active_target_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
           "updated_unix_ms": {
             "type": "integer",
             "minimum": 0,

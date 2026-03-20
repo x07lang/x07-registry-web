@@ -89,6 +89,48 @@
       ],
       "default": null
     },
+    "active_target_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "desired_state": {
+      "type": "string",
+      "enum": [
+        "running",
+        "paused",
+        "stopped",
+        "deleted"
+      ]
+    },
+    "observed_state": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "pending",
+        "running",
+        "degraded",
+        "failed",
+        "stopped"
+      ]
+    },
+    "observed_health": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "healthy",
+        "degraded",
+        "failed"
+      ]
+    },
     "cells": {
       "type": "array",
       "items": {
@@ -168,6 +210,35 @@
               "maxLength": 128
             },
             "default": []
+          },
+          "desired_state": {
+            "type": "string",
+            "enum": [
+              "running",
+              "paused",
+              "stopped",
+              "deleted"
+            ]
+          },
+          "observed_state": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "pending",
+              "running",
+              "degraded",
+              "failed",
+              "stopped"
+            ]
+          },
+          "observed_health": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "healthy",
+              "degraded",
+              "failed"
+            ]
           }
         }
       }
