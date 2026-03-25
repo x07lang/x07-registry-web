@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.rollout.event.schema.json",
+  "title": "lp.rollout.event@0.1.0",
+  "description": "Public contract for recording rollout state transitions and related split changes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "rollout_id",
+    "deployment_id",
+    "environment_id",
+    "observed_unix_ms",
+    "next_state"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.rollout.event@0.1.0" },
+    "event_id": { "$ref": "#/$defs/id" },
+    "rollout_id": { "$ref": "#/$defs/id" },
+    "deployment_id": { "$ref": "#/$defs/id" },
+    "environment_id": { "$ref": "#/$defs/id" },
+    "service_id": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }], "default": null },
+    "observed_unix_ms": { "$ref": "#/$defs/unix_ms" },
+    "prev_state": { "oneOf": [{ "$ref": "#/$defs/state" }, { "type": "null" }], "default": null },
+    "next_state": { "$ref": "#/$defs/state" },
+    "strategy": { "oneOf": [{ "$ref": "#/$defs/strategy" }, { "type": "null" }], "default": null },
+    "traffic_split": { "oneOf": [{ "$ref": "#/$defs/split" }, { "type": "null" }], "default": null },
+    "capacity_split": { "oneOf": [{ "$ref": "#/$defs/split" }, { "type": "null" }], "default": null },
+    "reason": { "oneOf": [{ "type": "string", "maxLength": 2048 }, { "type": "null" }], "default": null },
+    "request_id": { "oneOf": [{ "type": "string", "maxLength": 128 }, { "type": "null" }], "default": null },
+    "meta": { "type": "object", "additionalProperties": true, "default": {} }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "strategy": { "type": "string", "enum": ["canary", "blue_green"] },
+    "state": {
+      "type": "string",
+      "enum": ["queued", "shifting", "paused", "promoted", "rolled_back", "failed"]
+    },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stable_weight_pct", "canary_weight_pct"],
+      "properties": {
+        "stable_weight_pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "canary_weight_pct": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

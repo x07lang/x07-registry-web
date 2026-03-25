@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.rollout.status.schema.json",
+  "title": "lp.rollout.status@0.1.0",
+  "description": "Public contract for reporting rollout state, revision linkage, and split status for operator and automation surfaces.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rollout_id",
+    "deployment_id",
+    "environment_id",
+    "from_revision",
+    "to_revision",
+    "strategy",
+    "state",
+    "created_unix_ms",
+    "updated_unix_ms"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.rollout.status@0.1.0" },
+    "rollout_id": { "$ref": "#/$defs/id" },
+    "deployment_id": { "$ref": "#/$defs/id" },
+    "environment_id": { "$ref": "#/$defs/id" },
+    "service_id": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }], "default": null },
+    "from_revision": { "$ref": "#/$defs/revision_ref" },
+    "to_revision": { "$ref": "#/$defs/revision_ref" },
+    "strategy": { "$ref": "#/$defs/strategy" },
+    "state": { "$ref": "#/$defs/state" },
+    "traffic_split": { "oneOf": [{ "$ref": "#/$defs/split" }, { "type": "null" }], "default": null },
+    "capacity_split": { "oneOf": [{ "$ref": "#/$defs/split" }, { "type": "null" }], "default": null },
+    "reason": { "oneOf": [{ "type": "string", "maxLength": 2048 }, { "type": "null" }], "default": null },
+    "last_event_id": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }], "default": null },
+    "last_error": { "oneOf": [{ "type": "string", "maxLength": 16384 }, { "type": "null" }], "default": null },
+    "created_unix_ms": { "$ref": "#/$defs/unix_ms" },
+    "updated_unix_ms": { "$ref": "#/$defs/unix_ms" },
+    "meta": { "type": "object", "additionalProperties": true, "default": {} }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "sha256_prefixed": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "revision_ref": { "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "$ref": "#/$defs/id" }] },
+    "strategy": { "type": "string", "enum": ["canary", "blue_green"] },
+    "state": {
+      "type": "string",
+      "enum": ["queued", "shifting", "paused", "promoted", "rolled_back", "failed"]
+    },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stable_weight_pct", "canary_weight_pct"],
+      "properties": {
+        "stable_weight_pct": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "canary_weight_pct": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

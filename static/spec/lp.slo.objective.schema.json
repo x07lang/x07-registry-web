@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.slo.objective.schema.json",
+  "title": "lp.slo.objective@0.1.0",
+  "description": "Public contract for describing a single SLO objective target.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "objective_id", "kind", "window_s", "target"],
+  "properties": {
+    "schema_version": { "const": "lp.slo.objective@0.1.0" },
+    "objective_id": { "$ref": "#/$defs/id" },
+    "kind": { "$ref": "#/$defs/kind" },
+    "window_s": { "type": "integer", "minimum": 1, "maximum": 31536000 },
+    "target": {},
+    "notes": { "oneOf": [{ "type": "string", "maxLength": 16384 }, { "type": "null" }], "default": null }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "error_rate" } }, "required": ["kind"] },
+      "then": { "properties": { "target": { "$ref": "#/$defs/target_error_rate" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "availability" } }, "required": ["kind"] },
+      "then": { "properties": { "target": { "$ref": "#/$defs/target_availability" } } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "latency_p95_ms" } }, "required": ["kind"] },
+      "then": { "properties": { "target": { "$ref": "#/$defs/target_latency_p95_ms" } } }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["error_rate", "latency_p95_ms", "availability"]
+    },
+    "ratio": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "target_error_rate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max"],
+      "properties": { "max": { "$ref": "#/$defs/ratio" } }
+    },
+    "target_availability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min"],
+      "properties": { "min": { "$ref": "#/$defs/ratio" } }
+    },
+    "target_latency_p95_ms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_ms"],
+      "properties": { "max_ms": { "type": "integer", "minimum": 0 } }
+    }
+  }
+}

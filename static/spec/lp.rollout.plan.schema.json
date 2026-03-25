@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://x07.io/spec/lp.rollout.plan.schema.json",
+  "title": "lp.rollout.plan@0.1.0",
+  "description": "Public contract for describing an intended rollout progression (canary/blue-green) for a deployment revision change.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rollout_id",
+    "deployment_id",
+    "environment_id",
+    "from_revision",
+    "to_revision",
+    "strategy",
+    "created_unix_ms",
+    "updated_unix_ms"
+  ],
+  "properties": {
+    "schema_version": { "const": "lp.rollout.plan@0.1.0" },
+    "rollout_id": { "$ref": "#/$defs/id" },
+    "deployment_id": { "$ref": "#/$defs/id" },
+    "environment_id": { "$ref": "#/$defs/id" },
+    "service_id": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }], "default": null },
+    "from_revision": { "$ref": "#/$defs/revision_ref" },
+    "to_revision": { "$ref": "#/$defs/revision_ref" },
+    "strategy": { "$ref": "#/$defs/strategy" },
+    "canary": { "oneOf": [{ "$ref": "#/$defs/canary_plan" }, { "type": "null" }], "default": null },
+    "blue_green": { "oneOf": [{ "$ref": "#/$defs/blue_green_plan" }, { "type": "null" }], "default": null },
+    "created_unix_ms": { "$ref": "#/$defs/unix_ms" },
+    "updated_unix_ms": { "$ref": "#/$defs/unix_ms" },
+    "meta": { "type": "object", "additionalProperties": true, "default": {} }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "strategy": { "const": "canary" } }, "required": ["strategy"] },
+      "then": { "required": ["canary"] }
+    },
+    {
+      "if": { "properties": { "strategy": { "const": "blue_green" } }, "required": ["strategy"] },
+      "then": { "required": ["blue_green"] }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "unix_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991,
+      "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+    },
+    "sha256_prefixed": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "revision_ref": { "oneOf": [{ "$ref": "#/$defs/sha256_prefixed" }, { "$ref": "#/$defs/id" }] },
+    "strategy": { "type": "string", "enum": ["canary", "blue_green"] },
+    "canary_step_set_weight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "canary_weight_pct"],
+      "properties": {
+        "kind": { "const": "set_weight" },
+        "canary_weight_pct": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "canary_step_pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "pause_s"],
+      "properties": {
+        "kind": { "const": "pause" },
+        "pause_s": { "type": "integer", "minimum": 0, "maximum": 86400 }
+      }
+    },
+    "canary_step_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "analysis_kind", "require_decision"],
+      "properties": {
+        "kind": { "const": "analysis" },
+        "analysis_kind": { "type": "string", "enum": ["slo.snapshot"] },
+        "require_decision": { "type": "string", "enum": ["promote", "rollback"] }
+      }
+    },
+    "canary_step": {
+      "oneOf": [
+        { "$ref": "#/$defs/canary_step_set_weight" },
+        { "$ref": "#/$defs/canary_step_pause" },
+        { "$ref": "#/$defs/canary_step_analysis" }
+      ]
+    },
+    "canary_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps"],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/canary_step" }
+        }
+      }
+    },
+    "blue_green_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["auto_promote"],
+      "properties": { "auto_promote": { "type": "boolean" } }
+    }
+  }
+}
