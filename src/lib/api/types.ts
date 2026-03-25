@@ -59,6 +59,10 @@ export type PackageMetadataResponse = {
 	package: PackageManifest;
 	cksum: string;
 	is_official: boolean;
+	facets?: string[];
+	scale_classes_supported?: string[];
+	scale_tested?: boolean;
+	scale_test_evidence_ref?: string | null;
 };
 
 export type CatalogPackage = {

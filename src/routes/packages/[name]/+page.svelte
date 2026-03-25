@@ -123,6 +123,9 @@
 		{#if owners?.is_official || latestMeta?.is_official}
 			<span class="badge badge--accent">official</span>
 		{/if}
+		{#if latestMeta?.scale_tested}
+			<span class="badge badge--accent" data-testid="badge-pack-scale-tested">scale-tested</span>
+		{/if}
 	</div>
 	{#if latestMeta?.package.description}
 		<p class="page-header__desc">{latestMeta.package.description}</p>
@@ -163,6 +166,16 @@
 							<span class="meta-label">Modules</span>
 							<span class="meta-value">{latestMeta.package.modules.length} in <code class="code-inline">{latestMeta.package.module_root}</code></span>
 						</div>
+						{#if latestMeta.scale_classes_supported?.length}
+							<div class="meta-item">
+								<span class="meta-label">Scale classes</span>
+								<span class="meta-value"
+									><code class="code-inline" data-testid="list-pack-scale-classes"
+										>{latestMeta.scale_classes_supported.join(', ')}</code
+									></span
+								>
+							</div>
+						{/if}
 					{/if}
 				</div>
 

@@ -178,7 +178,30 @@ export function decodePackageMetadataResponse(raw: unknown): PackageMetadataResp
 	const pkg = decodePackageManifest(raw.package);
 	const cksum = expectString(raw.cksum, 'cksum');
 	const is_official = expectBool(raw.is_official, 'is_official');
-	return { ok: true, package: pkg, cksum, is_official };
+
+	const facets =
+		raw.facets === undefined || raw.facets === null ? undefined : expectStringArray(raw.facets, 'facets');
+	const scale_classes_supported =
+		raw.scale_classes_supported === undefined || raw.scale_classes_supported === null
+			? undefined
+			: expectStringArray(raw.scale_classes_supported, 'scale_classes_supported');
+	const scale_tested =
+		raw.scale_tested === undefined || raw.scale_tested === null
+			? undefined
+			: expectBool(raw.scale_tested, 'scale_tested');
+	const scale_test_evidence_ref =
+		raw.scale_test_evidence_ref === undefined
+			? undefined
+			: raw.scale_test_evidence_ref === null
+				? null
+				: expectString(raw.scale_test_evidence_ref, 'scale_test_evidence_ref');
+
+	const out: PackageMetadataResponse = { ok: true, package: pkg, cksum, is_official };
+	if (facets) out.facets = facets;
+	if (scale_classes_supported) out.scale_classes_supported = scale_classes_supported;
+	if (scale_tested !== undefined) out.scale_tested = scale_tested;
+	if (scale_test_evidence_ref !== undefined) out.scale_test_evidence_ref = scale_test_evidence_ref;
+	return out;
 }
 
 export function decodeCatalog(raw: unknown): Catalog {

@@ -122,12 +122,18 @@ export async function getDownloadUrl(name: string, version: string): Promise<str
 	return new URL(`${name}/${version}/download`, cfg.dl).toString();
 }
 
-export async function searchPackages(q: string, limit = 20, offset = 0): Promise<SearchResponse> {
+export async function searchPackages(
+	q: string,
+	limit = 20,
+	offset = 0,
+	scaleTestedOnly = false
+): Promise<SearchResponse> {
 	const cfg = await getIndexConfig();
 	const url = new URL('search', cfg.api);
 	if (q.trim()) url.searchParams.set('q', q.trim());
 	url.searchParams.set('limit', String(limit));
 	url.searchParams.set('offset', String(offset));
+	if (scaleTestedOnly) url.searchParams.set('scale_tested', 'true');
 	return fetchCachedJson(url.toString(), decodeSearchResponse);
 }
 

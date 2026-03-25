@@ -55,22 +55,32 @@
 	let details = $state<Map<string, HitDetails>>(new Map());
 
 	let q = $derived((page.url.searchParams.get('q') ?? '').trim());
+	let urlScaleTested = $derived.by(() => {
+		const raw = (page.url.searchParams.get('scale_tested') ?? '').trim().toLowerCase();
+		return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
+	});
 
 	let formQuery = $state('');
+	let scaleTestedOnly = $state(false);
 
 	$effect(() => {
 		formQuery = q;
 	});
 
 	$effect(() => {
+		scaleTestedOnly = urlScaleTested;
+	});
+
+	$effect(() => {
 		const query = q;
+		const scale = scaleTestedOnly;
 		response = null;
 		error = null;
 
 		let cancelled = false;
 		(async () => {
 			try {
-				const resp = await searchPackages(query, 100, 0);
+				const resp = await searchPackages(query, 100, 0, scale);
 				if (cancelled) return;
 				response = resp;
 			} catch (err) {
@@ -86,7 +96,21 @@
 	function submit(e: SubmitEvent) {
 		e.preventDefault();
 		const query = formQuery.trim();
-		void goto(query ? `/search?q=${encodeURIComponent(query)}` : '/search');
+		const params = new URLSearchParams();
+		if (query) params.set('q', query);
+		if (scaleTestedOnly) params.set('scale_tested', 'true');
+		const url = params.toString() ? `/search?${params.toString()}` : '/search';
+		void goto(url);
+	}
+
+	function toggleScaleTested(e: Event) {
+		scaleTestedOnly = (e.target as HTMLInputElement).checked;
+		const query = formQuery.trim();
+		const params = new URLSearchParams();
+		if (query) params.set('q', query);
+		if (scaleTestedOnly) params.set('scale_tested', 'true');
+		const url = params.toString() ? `/search?${params.toString()}` : '/search';
+		void goto(url);
 	}
 
 	$effect(() => {
@@ -212,6 +236,15 @@
 					<option value="not_yanked">Not yanked</option>
 					<option value="yanked">Only yanked</option>
 				</select>
+			</label>
+			<label class="filter">
+				<input
+					type="checkbox"
+					data-testid="toggle-scale-tested"
+					checked={scaleTestedOnly}
+					onchange={toggleScaleTested}
+				/>
+				<span>Scale-tested only</span>
 			</label>
 		</div>
 
