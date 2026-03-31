@@ -1,5 +1,9 @@
 # x07-registry-web
 
+## Agent Entrypoint
+
+Start here: https://x07lang.org/docs/getting-started/agent-quickstart
+
 `x07-registry-web` is the browser UI for the X07 package registry at [`x07.io`](https://x07.io).
 
 It gives end users a simple way to discover packages, inspect versions, read metadata, and follow publishing links, while still staying aligned with the same registry API and schema surfaces the toolchain uses.
