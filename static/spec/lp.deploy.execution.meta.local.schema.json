@@ -19,6 +19,7 @@
     "routing",
     "analysis",
     "retry_budget",
+    "recovery",
     "incident_count_total",
     "incident_count_open"
   ],
@@ -666,6 +667,42 @@
           "minimum": 0,
           "maximum": 100
         },
+        "strategy": {
+          "type": "string",
+          "enum": ["canary", "blue_green"],
+          "default": "canary"
+        },
+        "cutover_kind": {
+          "type": "string",
+          "enum": ["weight_shift", "selector_swap"],
+          "default": "weight_shift"
+        },
+        "active_slot": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["stable", "candidate"]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "last_cutover_unix_ms": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "algorithm": {
           "type": "string",
           "enum": [
@@ -917,6 +954,108 @@
             "maximum": 16
           },
           "default": {}
+        }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkpoint_key",
+        "attempt_exec_id",
+        "state",
+        "resume_supported",
+        "next_step_idx",
+        "resume_from_step_idx"
+      ],
+      "properties": {
+        "checkpoint_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "attempt_exec_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "parent_exec_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "state": {
+          "type": "string",
+          "enum": ["ready", "running", "resumable", "completed", "rolled_back", "failed", "aborted"]
+        },
+        "resume_supported": {
+          "type": "boolean"
+        },
+        "last_completed_step_idx": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "next_step_idx": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resume_from_step_idx": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failure_classification": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "runtime_start_failed",
+                "runtime_health_failed",
+                "analysis_failed",
+                "retry_budget_exhausted",
+                "slo_rollback",
+                "manual_rollback",
+                "aborted",
+                "plan_step_failed",
+                "unknown"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "last_failure_unix_ms": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "description": "Unix timestamp in milliseconds (non-negative, JS-safe integer)."
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       }
     },

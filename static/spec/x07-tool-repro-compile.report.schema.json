@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://x07.io/spec/x07-wasm.doctor.report.schema.json",
-  "title": "x07.wasm.doctor.report@0.1.0",
-  "description": "Machine-readable report emitted by `x07-wasm doctor` (toolchain preflight).",
+  "$id": "https://x07.io/spec/x07-tool-repro-compile.report.schema.json",
+  "title": "x07.tool.repro.compile.report@0.1.0",
+  "description": "Generic machine-readable report envelope for x07 CLI command wrappers.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "x07.wasm.doctor.report@0.1.0"
+      "const": "x07.tool.repro.compile.report@0.1.0"
     },
     "command": {
       "type": "string",
-      "const": "x07-wasm.doctor"
+      "const": "x07.repro.compile"
     },
     "ok": {
       "type": "boolean"
@@ -46,12 +46,60 @@
     "result"
   ],
   "$defs": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "$ref": "#/$defs/tool_meta"
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file_digest"
+          },
+          "default": []
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file_digest"
+          },
+          "default": []
+        },
+        "nondeterminism": {
+          "$ref": "#/$defs/nondeterminism"
+        }
+      },
+      "required": [
+        "tool",
+        "elapsed_ms",
+        "cwd",
+        "argv",
+        "inputs",
+        "outputs",
+        "nondeterminism"
+      ]
+    },
     "tool_meta": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "name": {
-          "const": "x07-wasm"
+          "const": "x07"
         },
         "version": {
           "type": "string"
@@ -61,15 +109,6 @@
           "pattern": "^[0-9a-fA-F]{7,40}$"
         },
         "rustc": {
-          "type": "string"
-        },
-        "clang": {
-          "type": "string"
-        },
-        "wasm_ld": {
-          "type": "string"
-        },
-        "wasmtime": {
           "type": "string"
         }
       },
@@ -122,116 +161,42 @@
         "uses_process"
       ]
     },
-    "meta": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "tool": {
-          "$ref": "#/$defs/tool_meta"
-        },
-        "elapsed_ms": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "cwd": {
-          "type": "string"
-        },
-        "argv": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "inputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/file_digest"
-          },
-          "default": []
-        },
-        "outputs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/file_digest"
-          },
-          "default": []
-        },
-        "nondeterminism": {
-          "$ref": "#/$defs/nondeterminism"
-        }
-      },
-      "required": [
-        "tool",
-        "elapsed_ms",
-        "cwd",
-        "argv",
-        "inputs",
-        "outputs",
-        "nondeterminism"
-      ]
-    },
     "result": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "x07",
-        "clang",
-        "wasm_ld",
-        "wasmtime",
-        "wasm_tools",
-        "wit_bindgen",
-        "wac"
-      ],
       "properties": {
-        "x07": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "stdout": {
+          "$ref": "#/$defs/stream_payload"
         },
-        "clang": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "stderr": {
+          "$ref": "#/$defs/stream_payload"
         },
-        "wasm_ld": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "stdout_json": {},
+        "stderr_json": {}
+      },
+      "required": [
+        "stdout",
+        "stderr"
+      ]
+    },
+    "stream_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bytes_len": {
+          "type": "integer",
+          "minimum": 0
         },
-        "wasmtime": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "text": {
+          "type": "string"
         },
-        "wasm_tools": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wit_bindgen": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wac": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "jco": {
-          "type": [
-            "string",
-            "null"
-          ]
+        "base64": {
+          "type": "string"
         }
-      }
+      },
+      "required": [
+        "bytes_len"
+      ]
     }
   }
 }

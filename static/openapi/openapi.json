@@ -27,7 +27,55 @@
           "api": { "type": "string", "format": "uri" },
           "auth-required": { "type": "boolean" },
           "sparse": { "const": true },
-          "verified-namespaces": { "type": "array", "items": { "type": "string" } }
+          "verified-namespaces": { "type": "array", "items": { "type": "string" } },
+          "signing": { "$ref": "#/components/schemas/IndexSigning" }
+        }
+      },
+      "IndexSigningPublicKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ed25519_pub"],
+        "properties": {
+          "id": { "type": "string" },
+          "ed25519_pub": { "type": "string" }
+        }
+      },
+      "IndexSigning": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "public_keys"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["ed25519"] },
+          "public_keys": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/components/schemas/IndexSigningPublicKey" }
+          }
+        }
+      },
+      "IndexCatalogPackage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "is_official"],
+        "properties": {
+          "name": { "type": "string" },
+          "is_official": { "type": "boolean" },
+          "latest": { "type": ["string", "null"] },
+          "description": { "type": ["string", "null"] },
+          "docs": { "type": ["string", "null"] },
+          "facets": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "IndexCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["schema_version", "packages"],
+        "properties": {
+          "schema_version": { "const": "x07.index-catalog@0.1.0" },
+          "packages": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/IndexCatalogPackage" }
+          }
         }
       },
       "TokenCheckResponse": {
@@ -89,10 +137,14 @@
       "SearchHit": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "latest_version"],
+        "required": ["name", "latest_version", "is_official"],
         "properties": {
           "name": { "type": "string" },
-          "latest_version": { "type": ["string", "null"] }
+          "latest_version": { "type": ["string", "null"] },
+          "is_official": { "type": "boolean" },
+          "description": { "type": ["string", "null"] },
+          "modules_count": { "type": ["integer", "null"] },
+          "facets": { "type": "array", "items": { "type": "string" } }
         }
       },
       "SearchResponse": {
@@ -160,10 +212,11 @@
       "OwnersResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ok", "name", "owners"],
+        "required": ["ok", "name", "is_official", "owners"],
         "properties": {
           "ok": { "const": true },
           "name": { "type": "string" },
+          "is_official": { "type": "boolean" },
           "owners": { "type": "array", "items": { "type": "string" } }
         }
       },
@@ -173,6 +226,89 @@
         "required": ["handle"],
         "properties": {
           "handle": { "type": "string" }
+        }
+      },
+      "PkgAdvisory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "id",
+          "package",
+          "version",
+          "kind",
+          "severity",
+          "summary",
+          "created_at_utc"
+        ],
+        "properties": {
+          "schema_version": { "const": "x07.pkg.advisory@0.1.0" },
+          "id": { "type": "string", "format": "uuid" },
+          "package": { "type": "string" },
+          "version": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["broken", "security", "deprecated"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "summary": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "details": { "type": "string" },
+          "created_at_utc": { "type": "string", "format": "date-time" },
+          "withdrawn_at_utc": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AdvisoriesResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok", "name", "version", "advisories"],
+        "properties": {
+          "ok": { "const": true },
+          "name": { "type": "string" },
+          "version": { "type": "string" },
+          "advisories": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PkgAdvisory" }
+          }
+        }
+      },
+      "AdvisoryCreateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "severity", "summary"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["broken", "security", "deprecated"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "summary": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "details": { "type": "string" }
+        }
+      },
+      "AdvisoryCreateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok", "advisory"],
+        "properties": {
+          "ok": { "const": true },
+          "advisory": { "$ref": "#/components/schemas/PkgAdvisory" }
+        }
+      },
+      "AdvisoryWithdrawResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok", "advisory"],
+        "properties": {
+          "ok": { "const": true },
+          "advisory": { "$ref": "#/components/schemas/PkgAdvisory" }
         }
       },
       "YankRequest": {
@@ -194,19 +330,48 @@
           "yanked": { "type": "boolean" }
         }
       },
+      "ScaleEvidenceRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_ref"],
+        "properties": {
+          "evidence_ref": { "type": "string" }
+        }
+      },
+      "ScaleEvidenceResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok", "name", "version"],
+        "properties": {
+          "ok": { "const": true },
+          "name": { "type": "string" },
+          "version": { "type": "string" },
+          "scale_classes_supported": { "type": "array", "items": { "type": "string" } },
+          "scale_tested": { "type": "boolean" },
+          "scale_test_evidence_ref": { "type": ["string", "null"] }
+        }
+      },
       "PackageManifest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["schema_version", "name", "version", "module_root", "modules"],
+        "required": ["schema_version", "name", "description", "license", "docs", "version", "module_root", "modules", "meta"],
         "properties": {
           "schema_version": { "type": "string" },
           "name": { "type": "string" },
           "description": { "type": "string" },
+          "license": { "type": "string" },
           "docs": { "type": "string" },
           "version": { "type": "string" },
           "module_root": { "type": "string" },
           "modules": { "type": "array", "items": { "type": "string" } },
-          "meta": { "type": "object" }
+          "meta": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["x07c_compat"],
+            "properties": {
+              "x07c_compat": { "type": "string" }
+            }
+          }
         }
       },
       "PublishResponse": {
@@ -224,11 +389,16 @@
       "PackageMetadataResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ok", "package", "cksum"],
+        "required": ["ok", "package", "cksum", "is_official"],
         "properties": {
           "ok": { "type": "boolean" },
           "package": { "$ref": "#/components/schemas/PackageManifest" },
-          "cksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          "cksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "is_official": { "type": "boolean" },
+          "facets": { "type": "array", "items": { "type": "string" } },
+          "scale_classes_supported": { "type": "array", "items": { "type": "string" } },
+          "scale_tested": { "type": "boolean" },
+          "scale_test_evidence_ref": { "type": ["string", "null"] }
         }
       },
       "PackageVersionInfo": {
@@ -245,13 +415,15 @@
       "PackageDetailResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["ok", "name", "latest_version", "owners", "versions"],
+        "required": ["ok", "name", "latest_version", "is_official", "owners", "versions"],
         "properties": {
           "ok": { "const": true },
           "name": { "type": "string" },
           "latest_version": { "type": ["string", "null"] },
+          "is_official": { "type": "boolean" },
           "owners": { "type": "array", "items": { "type": "string" } },
-          "versions": { "type": "array", "items": { "$ref": "#/components/schemas/PackageVersionInfo" } }
+          "versions": { "type": "array", "items": { "$ref": "#/components/schemas/PackageVersionInfo" } },
+          "facets": { "type": "array", "items": { "type": "string" } }
         }
       }
     }
@@ -279,6 +451,20 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/IndexConfig" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index/catalog.json": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Catalog index",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IndexCatalog" }
               }
             }
           }
@@ -436,7 +622,8 @@
         "parameters": [
           { "name": "q", "in": "query", "required": false, "schema": { "type": "string" } },
           { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } },
-          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer" } }
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "scale_tested", "in": "query", "required": false, "schema": { "type": "boolean" } }
         ],
         "responses": {
           "200": {
@@ -580,6 +767,14 @@
               }
             }
           },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "content": {
@@ -590,6 +785,73 @@
           },
           "409": {
             "description": "Already published",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/packs/{name}/versions/{version}/scale-evidence": {
+      "post": {
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "name", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "version", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ScaleEvidenceRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evidence attached",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ScaleEvidenceResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorResponse" }
@@ -710,6 +972,125 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/SimpleOkResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/packages/{name}/{version}/advisories": {
+      "get": {
+        "parameters": [
+          { "name": "name", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "version", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Advisories for the exact package version",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AdvisoriesResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [], "csrfHeader": [] }],
+        "parameters": [
+          { "name": "name", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "version", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AdvisoryCreateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Advisory created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AdvisoryCreateResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/packages/{name}/{version}/advisories/{id}/withdraw": {
+      "post": {
+        "security": [{ "bearerAuth": [] }, { "sessionCookie": [], "csrfHeader": [] }],
+        "parameters": [
+          { "name": "name", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "version", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Advisory withdrawn",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AdvisoryWithdrawResponse" }
               }
             }
           },
