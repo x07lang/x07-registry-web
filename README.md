@@ -53,7 +53,6 @@ That file controls which registry/index base the UI talks to at runtime.
 - [`x07`](https://github.com/x07lang/x07) provides the package commands and canonical package docs
 - [`x07-registry`](https://github.com/x07lang/x07-registry) serves the backing API and sparse index
 - `x07-registry-web` presents the same data to humans at `x07.io`
-- [`x07-platform-contracts`](https://github.com/x07lang/x07-platform-contracts) contributes part of the mirrored public schema slice served from `/spec/`
 
 ## Docs
 

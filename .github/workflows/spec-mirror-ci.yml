@@ -28,12 +28,6 @@ jobs:
           repository: x07lang/x07-wasm-backend
           path: _deps/x07-wasm-backend
 
-      - name: Checkout x07-platform-contracts
-        uses: actions/checkout@v4
-        with:
-          repository: x07lang/x07-platform-contracts
-          path: _deps/x07-platform-contracts
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:

@@ -59,6 +59,18 @@ async function collectSource(sourceName: string, dir: string): Promise<{ entries
   return { entries, files };
 }
 
+// Frozen vendored slice published before x07-platform-contracts was archived.
+// These schemas are no longer imported from an upstream checkout; they are
+// carried through unchanged from the published mirror under static/spec/.
+async function collectFrozenSlice(sourceName: string, dir: string, prefix: string): Promise<{ entries: SchemaEntry[] }> {
+  const files = (await listSchemaFiles(dir)).filter((file) => path.basename(file).startsWith(prefix));
+  const entries: SchemaEntry[] = [];
+  for (const file of files) {
+    entries.push({ id: await schemaId(file), path: path.basename(file), source: sourceName, file });
+  }
+  return { entries };
+}
+
 async function buildExpected(tmpOut: string, entries: SchemaEntry[]) {
   await mkdir(tmpOut, { recursive: true });
   for (const entry of entries) {
@@ -107,11 +119,6 @@ async function compareDir(expectedDir: string, actualDir: string): Promise<boole
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const outDir = String(args.out ?? process.env.X07_REGISTRY_WEB_SPEC_OUT_DIR ?? path.join(repoRoot, 'static/spec'));
-  const platformContractsDir = String(
-    args['x07-platform-contracts-dir'] ??
-      process.env.X07_PLATFORM_CONTRACTS_SPEC_DIR ??
-      path.join(repoRoot, '_deps/x07-platform-contracts/spec/schemas'),
-  );
   const sourceMap = {
     x07: String(args['x07-dir'] ?? process.env.X07_SPEC_DIR ?? path.join(repoRoot, '_deps/x07/docs/spec/schemas')),
     'x07-wasm-backend': String(args['x07-wasm-dir'] ?? process.env.X07_WASM_SPEC_DIR ?? path.join(repoRoot, '_deps/x07-wasm-backend/crates/x07-wasm/spec/schemas')),
@@ -144,8 +151,8 @@ async function main() {
     }
   }
 
-  const platformSource = await collectSource('x07-platform-contracts', platformContractsDir);
-  for (const entry of platformSource.entries) {
+  const frozenSlice = await collectFrozenSlice('x07-platform-contracts', outDir, 'lp.');
+  for (const entry of frozenSlice.entries) {
     const seenById = ids.get(entry.id);
     if (seenById) {
       if (seenById.path === entry.path && (await sameFile(seenById.file, entry.file))) {
@@ -172,9 +179,7 @@ async function main() {
   if (args.check) {
     const ok = await compareDir(expectedDir, outDir);
     if (!ok) {
-      console.error(
-        'run: npm exec --yes --package tsx -- tsx scripts/update_spec_mirror.ts --x07-platform-contracts-dir <path-to-x07-platform-contracts/spec/schemas>',
-      );
+      console.error('run: npm exec --yes --package tsx -- tsx scripts/update_spec_mirror.ts');
       process.exit(1);
     }
     console.log('ok: registry-web spec mirror');
