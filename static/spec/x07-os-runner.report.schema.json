@@ -152,6 +152,11 @@
         "compiled_exe": { "$ref": "#/$defs/maybe_string" },
         "compiled_exe_size": { "$ref": "#/$defs/maybe_u64" },
         "compile_error": { "$ref": "#/$defs/maybe_string" },
+        "diagnostics": {
+          "type": "array",
+          "items": { "$ref": "https://x07.io/spec/x07diag.schema.json#/$defs/diagnostic" },
+          "default": []
+        },
         "stdout_b64": { "$ref": "#/$defs/base64_bytes" },
         "stderr_b64": { "$ref": "#/$defs/base64_bytes" },
         "fuel_used": { "$ref": "#/$defs/maybe_u64" },
@@ -205,7 +210,8 @@
         "sched_stats": { "oneOf": [{ "$ref": "#/$defs/sched_stats" }, { "type": "null" }] },
         "mem_stats": { "oneOf": [{ "$ref": "#/$defs/mem_stats" }, { "type": "null" }] },
         "debug_stats": { "oneOf": [{ "$ref": "#/$defs/debug_stats" }, { "type": "null" }] },
-        "trap": { "$ref": "#/$defs/maybe_string" }
+        "trap": { "$ref": "#/$defs/maybe_string" },
+        "trap_help": { "$ref": "#/$defs/maybe_string" }
       }
     },
     "run_os_report": {
@@ -264,6 +270,7 @@
         "mem_stats": { "oneOf": [{ "$ref": "#/$defs/mem_stats" }, { "type": "null" }] },
         "debug_stats": { "oneOf": [{ "$ref": "#/$defs/debug_stats" }, { "type": "null" }] },
         "trap": { "$ref": "#/$defs/maybe_string" },
+        "trap_help": { "$ref": "#/$defs/maybe_string" },
         "sandbox_backend": {
           "anyOf": [
             { "$ref": "#/$defs/sandbox_backend" },
